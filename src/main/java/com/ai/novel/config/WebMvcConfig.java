@@ -16,22 +16,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     /**
-     * 配置静态资源处理
+     * 配置静态资源处理 - 简化版本
+     * 只处理 /static/** 路径
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 静态资源映射 - 避免与API路径冲突
+        // 处理 /static/** 下的资源（JS、CSS、Images等）
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/static/")
                 .setCachePeriod(3600);
         
-        // 根路径静态资源
-        registry.addResourceHandler("/index.html", "/favicon.ico")
-                .addResourceLocations("classpath:/static/")
-                .setCachePeriod(3600);
-        
-        // 其他静态文件
-        registry.addResourceHandler("/*.js", "/*.css", "/*.map", "/*.png", "/*.jpg", "/*.gif", "/*.svg")
+        // 处理根目录其他资源（CSS、JS等直接在static根目录的文件）
+        registry.addResourceHandler("/*.css", "/*.js", "/*.svg", "/*.ico")
                 .addResourceLocations("classpath:/static/")
                 .setCachePeriod(3600);
     }

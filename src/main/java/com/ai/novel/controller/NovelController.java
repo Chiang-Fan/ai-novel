@@ -4,9 +4,12 @@ import com.ai.novel.dto.request.NovelCreateRequest;
 import com.ai.novel.dto.request.NovelUpdateRequest;
 import com.ai.novel.dto.response.ApiResponse;
 import com.ai.novel.dto.response.NovelResponse;
+import com.ai.novel.dto.response.ChapterResponse;
 import com.ai.novel.entity.Novel;
+import com.ai.novel.entity.Chapter;
 import com.ai.novel.entity.enums.NovelStatus;
 import com.ai.novel.service.NovelService;
+import com.ai.novel.service.ChapterService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 public class NovelController {
     
     private final NovelService novelService;
+    private final ChapterService chapterService;
     
     /**
      * 创建小说
@@ -87,6 +91,23 @@ public class NovelController {
     }
     
     /**
+     * 获取小说的章节列表
+     */
+    @GetMapping("/{id}/chapters")
+    public ApiResponse<Page<ChapterResponse>> getNovelChapters(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "chapterNumber"));
+        
+        Page<ChapterResponse> chapters = chapterService.listChapters(id, pageable)
+                .map(this::convertToChapterResponse);
+        
+        return ApiResponse.success(chapters);
+    }
+    
+    /**
      * 转换为响应DTO
      */
     private NovelResponse convertToResponse(Novel novel) {
@@ -103,6 +124,30 @@ public class NovelController {
         response.setStatus(novel.getStatus());
         response.setCreatedAt(novel.getCreatedAt());
         response.setUpdatedAt(novel.getUpdatedAt());
+        return response;
+    }
+    
+    /**
+     * 转换章节为响应DTO
+     */
+    private ChapterResponse convertToChapterResponse(Chapter chapter) {
+        ChapterResponse response = new ChapterResponse();
+        response.setId(chapter.getId());
+        response.setNovelId(chapter.getNovel().getId());
+        response.setChapterNumber(chapter.getChapterNumber());
+        response.setTitle(chapter.getTitle());
+        response.setContent(chapter.getContent());
+        response.setSummary(chapter.getSummary());
+        response.setWordCount(chapter.getWordCount());
+        response.setStatus(chapter.getStatus());
+        
+        if (chapter.getScene() != null) {
+            response.setSceneId(chapter.getScene().getId());
+            response.setSceneName(chapter.getScene().getTitle());
+        }
+        
+        response.setCreatedAt(chapter.getCreatedAt());
+        response.setUpdatedAt(chapter.getUpdatedAt());
         return response;
     }
 }

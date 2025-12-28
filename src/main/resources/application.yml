@@ -52,9 +52,19 @@ spring:
       cache:
         cachecontrol:
           max-age: 3600
+      add-mappings: true
   
   mvc:
-    static-path-pattern: /**
+    # 设置静态资源URL前缀，只有 /static/** 路径下的资源才通过Spring处理
+    # 这样所有 /api/** 请求都会进入DispatcherServlet而不是静态资源处理器
+    static-path-pattern: /static/**
+    # 禁用默认的静态资源路径模式，由addResourceHandlers明确指定
+    throw-exception-if-no-handler-found: true
+  
+  web:
+    resources:
+      # 添加更多静态资源位置
+      static-locations: classpath:/static/
 
 # Spring AI配置
 spring.ai:

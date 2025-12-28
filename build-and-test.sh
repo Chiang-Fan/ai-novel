@@ -146,7 +146,7 @@ if [ "$CLEAN_BUILD" = true ]; then
     if [ "$SKIP_FRONTEND" = false ] && [ -d "frontend/node_modules" ]; then
         log_info "清理前端依赖..."
         rm -rf frontend/node_modules
-        rm -rf frontend/build
+        rm -rf frontend/dist
     fi
     
     log_success "清理完成"
@@ -176,7 +176,7 @@ if [ "$SKIP_FRONTEND" = false ]; then
         # 复制到Spring Boot静态资源目录
         log_info "复制前端资源到后端..."
         mkdir -p ../src/main/resources/static
-        cp -r build/* ../src/main/resources/static/
+        cp -r dist/* ../src/main/resources/static/
         
         cd ..
         log_success "前端构建完成"
