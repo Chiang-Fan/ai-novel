@@ -1,0 +1,21 @@
+# 本地开发环境配置模板
+# 复制此文件为 application-local.yml 并填写真实配置
+
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+# AI配置 - 通义千问
+ai:
+  qianwen:
+    # 请替换为您的真实API Key
+    # 获取地址: https://dashscope.console.aliyun.com/
+    api-key: your-dashscope-api-key-here
+    model: qwen-plus
+
+logging:
+  level:
+    com.aiwriter: DEBUG
+    org.springframework.web: DEBUG

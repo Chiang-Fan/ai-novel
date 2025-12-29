@@ -1,0 +1,142 @@
+spring:
+  application:
+    name: ai-novel-writer
+
+  # Spring AI OpenAI配置（使用占位符避免启动失败）
+  ai:
+    openai:
+      api-key: ${SPRING_AI_OPENAI_API_KEY:sk-dummy-key}
+
+  # 数据源配置（使用H2内存数据库）
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./data/novels;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # H2控制台配置（开发时可用）
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: false
+
+  # JPA配置
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  # Jackson配置
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+
+  # 静态资源配置
+  web:
+    resources:
+      static-locations: classpath:/static/
+      cache:
+        period: 86400 # 1天缓存
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# 服务器配置
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+
+# AI配置 (通义千问)
+# 注意: api-key应在application-local.yml中配置（不提交到Git）
+# 或通过环境变量DASHSCOPE_API_KEY传递
+ai:
+  qianwen:
+    api-key: ${DASHSCOPE_API_KEY:}  # 默认为空，必须配置
+    model: ${AI_MODEL:qwen-plus}
+    temperature: 0.7
+    max-tokens: 4000
+    timeout: 120000
+
+# 应用配置
+app:
+  novel:
+    max-context-chapters: 3
+    default-word-count: 2000
+    max-word-count: 10000
+    min-word-count: 500
+  
+  history:
+    max-entries: 100
+    retention-days: 90
+
+# Actuator配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# SpringDoc配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /docs
+    tags-sorter: alpha
+    operations-sorter: alpha
+  show-actuator: false
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.aiwriter: ${LOG_LEVEL:INFO}
+    org.springframework.web: INFO
+    org.hibernate.SQL: ${JPA_SHOW_SQL:false}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${JPA_SHOW_SQL:false}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 30
