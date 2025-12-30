@@ -43,6 +43,21 @@ public class WritingStyleController {
     }
     
     /**
+     * 获取系统模板风格（必须在 /{id} 之前定义）
+     */
+    @GetMapping("/templates")
+    public ApiResponse<List<WritingStyleResponse>> getTemplates() {
+        log.info("获取系统模板风格");
+        List<WritingStyle> styles = styleRepository.findByIsSystemTrueOrderByUsageCountDesc();
+        
+        List<WritingStyleResponse> responses = styles.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+        
+        return ApiResponse.success("获取成功", responses);
+    }
+    
+    /**
      * 获取风格详情
      */
     @GetMapping("/{id}")

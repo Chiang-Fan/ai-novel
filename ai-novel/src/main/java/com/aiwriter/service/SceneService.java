@@ -3,9 +3,13 @@ package com.aiwriter.service;
 import com.aiwriter.dto.SceneRecommendationRequest;
 import com.aiwriter.dto.SceneRecommendationResponse;
 import com.aiwriter.entity.Character;
+import com.aiwriter.entity.Chapter;
 import com.aiwriter.entity.Novel;
 import com.aiwriter.entity.Scene;
+import com.aiwriter.entity.WorldSetting;
+import com.aiwriter.repository.ChapterRepository;
 import com.aiwriter.repository.SceneRepository;
+import com.aiwriter.repository.WorldSettingRepository;
 import com.aiwriter.service.ai.AiService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,6 +29,8 @@ import java.util.List;
 public class SceneService {
     
     private final SceneRepository sceneRepository;
+    private final ChapterRepository chapterRepository;
+    private final WorldSettingRepository worldSettingRepository;
     private final NovelService novelService;
     private final CharacterService characterService;
     private final AiService aiService;
@@ -84,8 +91,18 @@ public class SceneService {
             List<Scene> existingScenes = getScenesByNovel(request.getNovelId());
             List<Character> characters = characterService.getCharactersByNovel(request.getNovelId());
             
+            // 获取地理/历史类世界设定
+            List<WorldSetting> worldSettings = worldSettingRepository.findByNovelId(request.getNovelId())
+                .stream()
+                .filter(ws -> "地理".equals(ws.getCategory()) || "历史".equals(ws.getCategory()) || "文化".equals(ws.getCategory()))
+                .limit(8)
+                .collect(Collectors.toList());
+            
+            // 获取最近章节的场景参考
+            List<Chapter> recentChapters = chapterRepository.findTopNByNovelId(request.getNovelId(), 2);
+            
             String systemPrompt = buildSceneRecommendationSystemPrompt();
-            String userPrompt = buildSceneRecommendationUserPrompt(novel, existingScenes, characters, request.getCount());
+            String userPrompt = buildSceneRecommendationUserPrompt(novel, existingScenes, characters, worldSettings, recentChapters, request.getCount());
             
             String aiResult = aiService.chatJson(systemPrompt, userPrompt);
             log.info("AI场景推荐原始结果: {}", aiResult);
@@ -146,7 +163,8 @@ public class SceneService {
     }
     
     private String buildSceneRecommendationUserPrompt(Novel novel, List<Scene> existingScenes, 
-                                                      List<Character> characters, int count) {
+                                                      List<Character> characters, List<WorldSetting> worldSettings,
+                                                      List<Chapter> recentChapters, int count) {
         StringBuilder sb = new StringBuilder();
         
         sb.append("=== 小说基本信息 ===\n");
@@ -155,10 +173,37 @@ public class SceneService {
         sb.append("简介：").append(novel.getDescription() != null ? novel.getDescription() : "无").append("\n");
         sb.append("创作风格：").append(novel.getWritingStyle() != null ? novel.getWritingStyle() : "未指定").append("\n\n");
         
+        // 添加世界设定（地理/历史/文化）
+        if (!worldSettings.isEmpty()) {
+            sb.append("=== 世界地理与历史设定 ===\n");
+            for (WorldSetting ws : worldSettings) {
+                sb.append("【").append(ws.getCategory()).append("】").append(ws.getName()).append("\n");
+                if (ws.getDescription() != null) {
+                    String desc = ws.getDescription();
+                    sb.append("  ").append(desc.length() > 150 ? desc.substring(0, 150) + "..." : desc).append("\n");
+                }
+            }
+            sb.append("\n");
+        }
+        
         if (!characters.isEmpty()) {
             sb.append("=== 已有角色 ===\n");
             for (Character c : characters) {
                 sb.append("- ").append(c.getName()).append("\n");
+            }
+            sb.append("\n");
+        }
+        
+        // 添加最近章节的场景参考
+        if (!recentChapters.isEmpty()) {
+            sb.append("=== 当前故事进展与场景 ===\n");
+            for (Chapter chapter : recentChapters) {
+                sb.append("第").append(chapter.getChapterNumber()).append("章：").append(chapter.getTitle()).append("\n");
+                if (chapter.getContent() != null) {
+                    String content = chapter.getContent();
+                    String preview = content.length() > 200 ? content.substring(0, 200) + "..." : content;
+                    sb.append("  场景描述：").append(preview).append("\n");
+                }
             }
             sb.append("\n");
         }
@@ -180,10 +225,12 @@ public class SceneService {
         
         sb.append("=== 推荐需求 ===\n");
         sb.append("请推荐 ").append(count).append(" 个新场景，确保：\n");
-        sb.append("1. 场景多样化，包含不同类型和氛围\n");
-        sb.append("2. 场景描述详细生动，富有画面感\n");
-        sb.append("3. 场景符合小说类型和风格\n");
-        sb.append("4. 场景适合角色活动和情节展开\n");
+        sb.append("1. 场景符合已建立的世界地理和历史设定\n");
+        sb.append("2. 场景与当前故事进度和氛围匹配\n");
+        sb.append("3. 场景多样化，包含不同类型和氛围\n");
+        sb.append("4. 场景描述详细生动，富有画面感\n");
+        sb.append("5. 场景符合小说类型和风格\n");
+        sb.append("6. 场景适合角色活动和情节展开\n");
         
         return sb.toString();
     }

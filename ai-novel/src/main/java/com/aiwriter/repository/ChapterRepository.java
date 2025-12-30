@@ -20,6 +20,11 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     List<Chapter> findByNovelIdOrderByChapterNumberAsc(Long novelId);
     
     /**
+     * 根据小说ID和章节号查询章节
+     */
+    Optional<Chapter> findByNovelIdAndChapterNumber(Long novelId, Integer chapterNumber);
+    
+    /**
      * 查询小说最近N章
      */
     @Query("SELECT c FROM Chapter c WHERE c.novelId = ?1 ORDER BY c.chapterNumber DESC LIMIT ?2")

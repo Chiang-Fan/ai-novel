@@ -1,8 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50 pb-12">
-    <!-- 导航栏 -->
-    <Navbar />
-    
     <!-- 页面头部 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex justify-between items-center mb-8">
@@ -199,30 +196,14 @@
       <div v-else class="text-center py-12">
         <div class="text-6xl mb-4">🎨</div>
         <h3 class="text-xl font-semibold text-gray-900 mb-2">尚未提取写作风格</h3>
-        <p class="text-gray-600 mb-6">请先选择一个章节来分析小说的写作风格</p>
+        <p class="text-gray-600 mb-6">
+          系统会在创建或更新章节时自动提取文风特征<br>
+          请先创建一些章节内容，文风数据将自动生成
+        </p>
         
-        <div class="max-w-md mx-auto">
-          <select 
-            v-model="selectedChapterId"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-          >
-            <option value="">选择章节</option>
-            <option 
-              v-for="chapter in chapters" 
-              :key="chapter.id" 
-              :value="chapter.id"
-            >
-              第{{ chapter.chapterNumber }}章 - {{ chapter.title }}
-            </option>
-          </select>
-          <Button 
-            @click="extractStyle" 
-            :disabled="!selectedChapterId || extracting"
-            class="w-full"
-          >
-            {{ extracting ? '提取中...' : '提取写作风格' }}
-          </Button>
-        </div>
+        <Button @click="loadData" variant="secondary">
+          刷新数据
+        </Button>
       </div>
     </div>
   </div>
@@ -246,16 +227,11 @@ const route = useRoute()
 const novelId = ref(route.params.id)
 
 const loading = ref(true)
-const extracting = ref(false)
-const validating = ref(false)
 const comparing = ref(false)
 
 const style = ref(null)
 const templates = ref([])
 const chapters = ref([])
-const testContent = ref('')
-const validationResult = ref(null)
-const selectedChapterId = ref('')
 const comparison = ref(null)
 
 // 计算属性
@@ -325,49 +301,6 @@ const loadData = async () => {
     alert('加载数据失败: ' + err.message)
   } finally {
     loading.value = false
-  }
-}
-
-const extractStyle = async () => {
-  if (!selectedChapterId.value) {
-    alert('请选择章节')
-    return
-  }
-  
-  extracting.value = true
-  try {
-    style.value = await api.writingStyles.extract(
-      novelId.value, 
-      selectedChapterId.value
-    )
-    alert('风格提取成功！')
-  } catch (err) {
-    console.error('提取风格失败:', err)
-    alert('提取风格失败: ' + err.message)
-  } finally {
-    extracting.value = false
-  }
-}
-
-const validateContent = async () => {
-  if (!testContent.value.trim()) {
-    alert('请输入待验证的内容')
-    return
-  }
-  
-  validating.value = true
-  validationResult.value = null
-  
-  try {
-    validationResult.value = await api.writingStyles.validate({
-      novelId: novelId.value,
-      content: testContent.value
-    })
-  } catch (err) {
-    console.error('验证失败:', err)
-    alert('验证失败: ' + err.message)
-  } finally {
-    validating.value = false
   }
 }
 

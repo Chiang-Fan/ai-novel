@@ -3,8 +3,12 @@ package com.aiwriter.service;
 import com.aiwriter.dto.CharacterRecommendationRequest;
 import com.aiwriter.dto.CharacterRecommendationResponse;
 import com.aiwriter.entity.Character;
+import com.aiwriter.entity.Chapter;
 import com.aiwriter.entity.Novel;
+import com.aiwriter.entity.WorldSetting;
 import com.aiwriter.repository.CharacterRepository;
+import com.aiwriter.repository.ChapterRepository;
+import com.aiwriter.repository.WorldSettingRepository;
 import com.aiwriter.service.ai.AiService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +28,8 @@ import java.util.stream.Collectors;
 public class CharacterService {
     
     private final CharacterRepository characterRepository;
+    private final ChapterRepository chapterRepository;
+    private final WorldSettingRepository worldSettingRepository;
     private final NovelService novelService;
     private final AiService aiService;
     private final ObjectMapper objectMapper;
@@ -82,8 +89,23 @@ public class CharacterService {
             Novel novel = novelService.getNovel(request.getNovelId());
             List<Character> existingCharacters = getCharactersByNovel(request.getNovelId());
             
+            // 获取世界观设定（按重要性排序）
+            List<WorldSetting> worldSettings = worldSettingRepository.findByNovelId(request.getNovelId())
+                .stream()
+                .sorted((a, b) -> {
+                    // 按重要性排序: high > medium > low
+                    int orderA = getImportanceOrder(a.getImportance());
+                    int orderB = getImportanceOrder(b.getImportance());
+                    return Integer.compare(orderA, orderB);
+                })
+                .limit(10) // 限制最多10个设定
+                .collect(Collectors.toList());
+            
+            // 获取最近章节内容作为参考
+            List<Chapter> recentChapters = chapterRepository.findTopNByNovelId(request.getNovelId(), 3);
+            
             String systemPrompt = buildCharacterRecommendationSystemPrompt();
-            String userPrompt = buildCharacterRecommendationUserPrompt(novel, existingCharacters, request.getCount());
+            String userPrompt = buildCharacterRecommendationUserPrompt(novel, existingCharacters, worldSettings, recentChapters, request.getCount());
             
             String aiResult = aiService.chatJson(systemPrompt, userPrompt);
             log.info("AI角色推荐原始结果: {}", aiResult);
@@ -150,7 +172,8 @@ public class CharacterService {
 """;
     }
     
-    private String buildCharacterRecommendationUserPrompt(Novel novel, List<Character> existingCharacters, int count) {
+    private String buildCharacterRecommendationUserPrompt(Novel novel, List<Character> existingCharacters, 
+                                                          List<WorldSetting> worldSettings, List<Chapter> recentChapters, int count) {
         StringBuilder sb = new StringBuilder();
         
         sb.append("=== 小说基本信息 ===\n");
@@ -159,6 +182,22 @@ public class CharacterService {
         sb.append("简介：").append(novel.getDescription() != null ? novel.getDescription() : "无").append("\n");
         sb.append("创作风格：").append(novel.getWritingStyle() != null ? novel.getWritingStyle() : "未指定").append("\n");
         sb.append("目标读者：").append(novel.getTargetAudience() != null ? novel.getTargetAudience() : "未指定").append("\n\n");
+        
+        // 添加世界观设定
+        if (!worldSettings.isEmpty()) {
+            sb.append("=== 世界观设定 ===\n");
+            for (WorldSetting ws : worldSettings) {
+                sb.append("【").append(ws.getCategory()).append("】").append(ws.getName()).append("\n");
+                if (ws.getDescription() != null) {
+                    String desc = ws.getDescription();
+                    sb.append("  ").append(desc.length() > 200 ? desc.substring(0, 200) + "..." : desc).append("\n");
+                }
+                if (ws.getRules() != null && !ws.getRules().isEmpty()) {
+                    sb.append("  规则：").append(ws.getRules().length() > 100 ? ws.getRules().substring(0, 100) + "..." : ws.getRules()).append("\n");
+                }
+            }
+            sb.append("\n");
+        }
         
         if (!existingCharacters.isEmpty()) {
             sb.append("=== 已有角色 ===\n");
@@ -176,14 +215,44 @@ public class CharacterService {
             sb.append("这是一个全新的小说项目，还没有创建任何角色。请根据书名和类型，推荐适合的初始角色。\n\n");
         }
         
+        // 添加最近章节内容参考
+        if (!recentChapters.isEmpty()) {
+            sb.append("=== 故事当前进展 ===\n");
+            for (Chapter chapter : recentChapters) {
+                sb.append("第").append(chapter.getChapterNumber()).append("章：").append(chapter.getTitle()).append("\n");
+                if (chapter.getContent() != null) {
+                    String content = chapter.getContent();
+                    // 取前300字作为参考
+                    String preview = content.length() > 300 ? content.substring(0, 300) + "..." : content;
+                    sb.append("  内容片段：").append(preview).append("\n");
+                }
+            }
+            sb.append("\n");
+        }
+        
         sb.append("=== 推荐需求 ===\n");
         sb.append("请推荐 ").append(count).append(" 个新角色，确保：\n");
-        sb.append("1. 角色之间有明确的关系和互动潜力\n");
-        sb.append("2. 角色设定详细完整，可以直接使用\n");
-        sb.append("3. 角色符合小说类型和风格\n");
-        sb.append("4. 如果已有角色，新角色应与其形成合理的关系网络\n");
+        sb.append("1. 角色符合已建立的世界观设定和规则\n");
+        sb.append("2. 角色与故事当前进展自然衔接，避免突兀感\n");
+        sb.append("3. 角色之间有明确的关系和互动潜力\n");
+        sb.append("4. 角色设定详细完整，可以直接使用\n");
+        sb.append("5. 角色符合小说类型和风格\n");
+        sb.append("6. 如果已有角色，新角色应与其形成合理的关系网络\n");
         
         return sb.toString();
+    }
+    
+    /**
+     * 获取重要性排序值
+     */
+    private int getImportanceOrder(String importance) {
+        if (importance == null) return 3;
+        return switch (importance.toLowerCase()) {
+            case "high" -> 1;
+            case "medium" -> 2;
+            case "low" -> 3;
+            default -> 3;
+        };
     }
     
     private String translateRoleType(String roleType) {

@@ -1,0 +1,20 @@
+# application.yml 中添加自动提取配置
+
+ai-writer:
+  auto-extraction:
+    # 是否启用自动提取功能
+    enabled: true
+    
+    # 相似度阈值配置（0-1之间，数值越高越严格）
+    similarity:
+      scene: 0.75          # 场景相似度阈值
+      outline: 0.70        # 大纲相似度阈值
+      plot-hook: 0.80      # 伏笔相似度阈值  
+      writing-style: 0.85  # 文风相似度阈值
+    
+    # 功能开关
+    features:
+      extract-writing-style: true  # 自动提取文风特征
+      extract-scene: true          # 自动识别场景
+      extract-outline: true        # 自动生成大纲
+      extract-plot-hook: true      # 自动识别伏笔

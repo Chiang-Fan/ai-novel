@@ -47,7 +47,7 @@ public class PlotHookService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     
     /**
-     * AI 自动检测章节中的伏笔
+     * AI 自动检测章节中的伏笔（通过章节ID）
      */
     @Transactional
     public List<PlotHookDto> detectPlotHooks(Long chapterId) {
@@ -73,6 +73,17 @@ public class PlotHookService {
         return savedHooks.stream()
             .map(this::mapToDto)
             .collect(Collectors.toList());
+    }
+    
+    /**
+     * AI 自动检测章节中的伏笔（通过小说ID和章节号）
+     */
+    @Transactional
+    public List<PlotHookDto> detectPlotHooksByChapterNumber(Long novelId, Integer chapterNumber) {
+        Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
+            .orElseThrow(() -> new RuntimeException("章节不存在: 小说ID=" + novelId + ", 章节号=" + chapterNumber));
+        
+        return detectPlotHooks(chapter.getId());
     }
     
     /**

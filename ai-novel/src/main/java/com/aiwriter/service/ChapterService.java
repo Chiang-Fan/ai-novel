@@ -38,6 +38,7 @@ public class ChapterService {
     private final CharacterService characterService;
     private final SceneService sceneService;
     private final ObjectMapper objectMapper;
+    private final AutoExtractionService autoExtractionService;  // 新增
     
     /**
      * 创建章节
@@ -71,8 +72,10 @@ public class ChapterService {
         // 更新小说统计
         novelService.updateNovelStats(request.getNovelId());
         
-        // TODO: 添加日志记录
-        // log.info("创建章节成功: novelId={}, chapterNumber={}, words={}", request.getNovelId(), nextChapterNumber, wordCount);
+        // 🔥 触发自动提取（异步执行）
+        autoExtractionService.extractAllFromChapter(saved);
+        
+        log.info("创建章节成功: novelId={}, chapterNumber={}, words={}", request.getNovelId(), nextChapterNumber, wordCount);
         
         return saved;
     }
@@ -131,10 +134,13 @@ public class ChapterService {
         // 更新小说统计
         novelService.updateNovelStats(request.getNovelId());
         
+        // 🔥 触发自动提取（异步执行）
+        autoExtractionService.extractAllFromChapter(saved);
+        
         // 续写完成后自动分析并更新状态
         autoAnalyzeAfterContinuation(saved);
         
-        log.info("AI续写完成: chapterId={}, words={}", saved.getId(), wordCount);
+        log.info("AI续写完成: chapterId={}, words={}, 已触发自动提取", saved.getId(), wordCount);
         
         return saved;
     }
@@ -163,6 +169,7 @@ public class ChapterService {
         
         // 保存修改前的内容用于历史记录
         String contentBefore = chapter.getContent();
+        boolean contentChanged = false;
         
         if (request.getTitle() != null) {
             chapter.setTitle(request.getTitle());
@@ -171,13 +178,14 @@ public class ChapterService {
             chapter.setContent(request.getContent());
             int wordCount = aiService.countWords(request.getContent());
             chapter.setWordCount(wordCount);
+            contentChanged = true;
             
             // 记录编辑历史
             try {
                 editHistoryService.recordEdit(id, "UPDATE", contentBefore, 
                         request.getContent(), "用户手动编辑");
             } catch (Exception e) {
-                log.warn("记录编辑历史失败: {}", e.getMessage());
+                log.error("记录编辑历史失败", e);
             }
         }
         if (request.getSceneId() != null) {
@@ -191,6 +199,12 @@ public class ChapterService {
         
         // 更新小说统计
         novelService.updateNovelStats(chapter.getNovelId());
+        
+        // 🔥 如果内容有变化，触发自动提取（异步执行）
+        if (contentChanged) {
+            autoExtractionService.extractAllFromChapter(updated);
+            log.info("章节 {} 内容已更新，已触发自动提取", id);
+        }
         
         // log.info("更新章节成功: id={}", id);
         return updated;

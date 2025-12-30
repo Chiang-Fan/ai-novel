@@ -33,8 +33,8 @@ echo ""
 echo "🚀 启动应用..."
 echo ""
 
-# 启动应用
-"$JAVA_HOME/bin/java" -jar target/ai-novel-writer.jar
+# 启动应用（使用local配置）
+"$JAVA_HOME/bin/java" -Dfile.encoding=UTF-8 -jar target/ai-novel-writer.jar --spring.profiles.active=local
 
 echo ""
 echo "=========================================="

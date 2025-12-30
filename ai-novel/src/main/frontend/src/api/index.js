@@ -187,19 +187,5 @@ export default {
     getByNovelId: (novelId) => api.get(`/chapter-analysis/novel/${novelId}`),
     getStatistics: (novelId) => api.get(`/chapter-analysis/novel/${novelId}/statistics`),
     delete: (id) => api.delete(`/chapter-analysis/${id}`)
-  },
-
-  // 智能推荐
-  suggestions: {
-    generateForNovel: (novelId) => api.post(`/suggestions/generate/novel/${novelId}`),
-    generateForChapter: (chapterId, novelId) => api.post(`/suggestions/generate/chapter/${chapterId}`, null, { params: { novelId } }),
-    getByNovelId: (novelId) => api.get(`/suggestions/novel/${novelId}`),
-    getActive: (novelId) => api.get(`/suggestions/novel/${novelId}/active`),
-    getByType: (novelId, type) => api.get(`/suggestions/novel/${novelId}/type/${type}`),
-    getHighPriority: (novelId, threshold = 7) => api.get(`/suggestions/novel/${novelId}/high-priority`, { params: { threshold } }),
-    accept: (id, feedback) => api.put(`/suggestions/${id}/accept`, feedback),
-    reject: (id, reason) => api.put(`/suggestions/${id}/reject`, reason),
-    getStatistics: (novelId) => api.get(`/suggestions/novel/${novelId}/statistics`),
-    cleanup: (novelId) => api.delete(`/suggestions/novel/${novelId}/cleanup`)
   }
 }

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/scenes")
+@RequestMapping("/api/scene-management")
 @RequiredArgsConstructor
 public class SceneManagementController {
     

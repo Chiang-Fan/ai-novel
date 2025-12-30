@@ -74,11 +74,13 @@ public class PlotHookController {
     /**
      * AI 自动检测章节中的伏笔
      */
-    @PostMapping("/detect/{chapterId}")
+    @PostMapping("/detect/{novelId}/{chapterNumber}")
     @Operation(summary = "AI 自动检测伏笔", description = "使用 AI 分析章节内容，自动识别潜在伏笔")
-    public ResponseEntity<ApiResponse<List<PlotHookDto>>> detectHooks(@PathVariable Long chapterId) {
-        log.info("开始检测章节 {} 的伏笔", chapterId);
-        List<PlotHookDto> hooks = plotHookService.detectPlotHooks(chapterId);
+    public ResponseEntity<ApiResponse<List<PlotHookDto>>> detectHooks(
+            @PathVariable Long novelId,
+            @PathVariable Integer chapterNumber) {
+        log.info("开始检测小说 {} 第 {} 章的伏笔", novelId, chapterNumber);
+        List<PlotHookDto> hooks = plotHookService.detectPlotHooksByChapterNumber(novelId, chapterNumber);
         return ResponseEntity.ok(ApiResponse.success("检测成功", hooks));
     }
     

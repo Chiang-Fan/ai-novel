@@ -288,7 +288,7 @@
                 <div class="text-sm font-medium text-yellow-700 mb-2">💭 情感基调</div>
                 <div class="text-gray-800">{{ result.plot.emotionalTone }}</div>
               </div>
-              <div v-if="result.plot.foreshadowing && result.plot.foreshadowing.length" class="p-4 bg-purple-50 rounded-lg">
+              <div v-if="result.plot?.foreshadowing && Array.isArray(result.plot.foreshadowing) && result.plot.foreshadowing.length" class="p-4 bg-purple-50 rounded-lg">
                 <div class="text-sm font-medium text-purple-700 mb-2">🔮 潜在伏笔</div>
                 <ul class="list-disc list-inside space-y-1">
                   <li v-for="(item, index) in result.plot.foreshadowing" :key="index" class="text-gray-800 text-sm">

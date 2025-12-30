@@ -170,17 +170,19 @@ export default {
 
     const loadChapters = async () => {
       try {
-        const response = await api.chapters.list(novelId.value)
-        chapters.value = response.data
+        const data = await api.chapters.list(novelId.value)
+        chapters.value = data || []
+        console.log('加载到的章节:', chapters.value)
       } catch (error) {
         console.error('加载章节失败:', error)
+        chapters.value = []
       }
     }
 
     const loadStatistics = async () => {
       try {
-        const response = await api.chapterAnalysis.getStatistics(novelId.value)
-        statistics.value = response.data
+        const data = await api.chapterAnalysis.getStatistics(novelId.value)
+        statistics.value = data
       } catch (error) {
         console.error('加载统计失败:', error)
       }
@@ -194,8 +196,8 @@ export default {
 
       loading.value = true
       try {
-        const response = await api.chapterAnalysis.getByChapterId(selectedChapterId.value)
-        currentAnalysis.value = response.data
+        const data = await api.chapterAnalysis.getByChapterId(selectedChapterId.value)
+        currentAnalysis.value = data
       } catch (error) {
         console.error('加载分析结果失败:', error)
         currentAnalysis.value = null
@@ -209,13 +211,13 @@ export default {
 
       analyzing.value = true
       try {
-        const response = await api.chapterAnalysis.analyze(novelId.value, selectedChapterId.value)
-        currentAnalysis.value = response.data
+        const data = await api.chapterAnalysis.analyze(novelId.value, selectedChapterId.value)
+        currentAnalysis.value = data
         alert('✅ 分析完成！')
         await loadStatistics()
       } catch (error) {
         console.error('分析失败:', error)
-        alert('❌ 分析失败：' + (error.response?.data?.message || error.message))
+        alert('❌ 分析失败：' + (error.message || '未知错误'))
       } finally {
         analyzing.value = false
       }

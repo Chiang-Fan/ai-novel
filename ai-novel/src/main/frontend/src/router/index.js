@@ -20,7 +20,6 @@ import EditHistory from '../views/EditHistory.vue'
 import WritingStyleManager from '../views/WritingStyleManager.vue'
 import PlotHookManager from '../views/PlotHookManager.vue'
 import ChapterAnalysisViewer from '../views/ChapterAnalysisViewer.vue'
-import SuggestionManager from '../views/SuggestionManager.vue'
 import Login from '../views/Login.vue'
 
 const routes = [
@@ -107,12 +106,6 @@ const routes = [
     name: 'ChapterAnalysisViewer',
     component: ChapterAnalysisViewer,
     meta: { title: '章节分析' }
-  },
-  {
-    path: '/novel/:id/suggestions',
-    name: 'SuggestionManager',
-    component: SuggestionManager,
-    meta: { title: '智能推荐' }
   },
   {
     path: '/novel/:novelId/chapter/:chapterId/edit',

@@ -7,18 +7,18 @@
 
     <div v-else>
       <!-- 小说信息 -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ novel.title }}</h1>
-        <p class="text-gray-600 mb-4">{{ novel.description }}</p>
+      <div v-if="novel" class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ novel.title || '未命名小说' }}</h1>
+        <p class="text-gray-600 mb-4">{{ novel.description || '暂无简介' }}</p>
         
         <div class="flex items-center space-x-6 text-sm text-gray-500">
-          <span>{{ novel.genre }}</span>
-          <span>{{ novel.totalChapters }} 章</span>
-          <span>{{ formatWords(novel.totalWords) }}</span>
+          <span>{{ novel.genre || '未分类' }}</span>
+          <span>{{ novel.totalChapters || 0 }} 章</span>
+          <span>{{ formatWords(novel.totalWords || 0) }}</span>
         </div>
 
         <div class="mt-6">
-          <div class="flex flex-wrap gap-3">
+          <div v-if="novel && novel.id" class="flex flex-wrap gap-3">
             <!-- AI续写 -->
             <router-link
               :to="`/novel/${novel.id}/write`"
@@ -71,15 +71,6 @@
               <div class="text-3xl mb-2">📊</div>
               <div class="font-semibold text-gray-800 group-hover:text-cyan-600">章节分析</div>
               <div class="text-xs text-gray-500 mt-1">11维度深度分析</div>
-            </router-link>
-
-            <!-- 智能推荐 (新增) -->
-            <router-link
-              :to="`/novel/${novel.id}/suggestions`"
-              class="p-4 bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-200 rounded-lg hover:shadow-lg transition group">
-              <div class="text-3xl mb-2">🤖</div>
-              <div class="font-semibold text-gray-800 group-hover:text-amber-600">智能推荐</div>
-              <div class="text-xs text-gray-500 mt-1">AI 写作建议</div>
             </router-link>
 
             <!-- 角色管理 -->
