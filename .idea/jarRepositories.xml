@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteRepositoriesConfiguration">
+    <remote-repository>
+      <option name="id" value="thirdparty" />
+      <option name="name" value="thirdparty" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/thirdparty/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="tencent_finance_tms-snapshots" />
+      <option name="name" value="tencent_finance_tms-snapshots" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tencent_finance_tms-snapshots" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="https://repo.maven.apache.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="tencent_public" />
+      <option name="name" value="tencent_public" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tencent_public" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="tcesdk" />
+      <option name="name" value="tcesdk" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tcesdk" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Maven Central repository" />
+      <option name="url" value="https://repo1.maven.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="csig-prod-mid-dev02" />
+      <option name="name" value="csig-prod-mid-dev02" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/csig-prod-mid-dev02/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="maven-public" />
+      <option name="name" value="maven-public" />
+      <option name="url" value="https://mirrors.tencent.com/nexus/repository/maven-public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="tfdp" />
+      <option name="name" value="tfdp" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tfdp" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="tsf-snapshot" />
+      <option name="name" value="tsf-snapshot" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tsf-snapshot/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jarvis" />
+      <option name="name" value="jarvis" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/jarvis/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="tencent_oms" />
+      <option name="name" value="tencent_oms" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tencent_oms" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="csig-prod-mid-dev02-snapshot" />
+      <option name="name" value="csig-prod-mid-dev02-snapshot" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/csig-prod-mid-dev02-snapshot/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="bcp-snapshots" />
+      <option name="name" value="bcp-snapshots" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tencent_finance_tms-snapshots/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="spring-milestones" />
+      <option name="name" value="Spring Milestones" />
+      <option name="url" value="https://repo.spring.io/milestone" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="tsf" />
+      <option name="name" value="tsf" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tsf/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jboss.community" />
+      <option name="name" value="JBoss Community repository" />
+      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="bcp" />
+      <option name="name" value="bcp" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tencent_finance_tms/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="tencent_finance_tms" />
+      <option name="name" value="tencent_finance_tms" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tencent_finance_tms" />
+    </remote-repository>
+  </component>
+</project>

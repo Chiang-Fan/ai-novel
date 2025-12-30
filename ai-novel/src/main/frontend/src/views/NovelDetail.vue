@@ -46,6 +46,42 @@
 
           <!-- 内容管理工具 -->
           <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <!-- 文风管理 -->
+            <router-link
+              :to="`/novel/${novel.id}/writing-style`"
+              class="p-4 bg-gradient-to-br from-pink-50 to-pink-100 border-2 border-pink-200 rounded-lg hover:shadow-lg transition group">
+              <div class="text-3xl mb-2">🎨</div>
+              <div class="font-semibold text-gray-800 group-hover:text-pink-600">文风管理</div>
+              <div class="text-xs text-gray-500 mt-1">分析写作风格</div>
+            </router-link>
+
+            <!-- 伏笔管理 -->
+            <router-link
+              :to="`/novel/${novel.id}/plot-hooks`"
+              class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 rounded-lg hover:shadow-lg transition group">
+              <div class="text-3xl mb-2">🎭</div>
+              <div class="font-semibold text-gray-800 group-hover:text-purple-600">伏笔管理</div>
+              <div class="text-xs text-gray-500 mt-1">埋设和跟踪伏笔</div>
+            </router-link>
+
+            <!-- 章节分析 (新增) -->
+            <router-link
+              :to="`/novel/${novel.id}/chapter-analysis`"
+              class="p-4 bg-gradient-to-br from-cyan-50 to-cyan-100 border-2 border-cyan-200 rounded-lg hover:shadow-lg transition group">
+              <div class="text-3xl mb-2">📊</div>
+              <div class="font-semibold text-gray-800 group-hover:text-cyan-600">章节分析</div>
+              <div class="text-xs text-gray-500 mt-1">11维度深度分析</div>
+            </router-link>
+
+            <!-- 智能推荐 (新增) -->
+            <router-link
+              :to="`/novel/${novel.id}/suggestions`"
+              class="p-4 bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-200 rounded-lg hover:shadow-lg transition group">
+              <div class="text-3xl mb-2">🤖</div>
+              <div class="font-semibold text-gray-800 group-hover:text-amber-600">智能推荐</div>
+              <div class="text-xs text-gray-500 mt-1">AI 写作建议</div>
+            </router-link>
+
             <!-- 角色管理 -->
             <router-link
               :to="`/novel/${novel.id}/characters`"

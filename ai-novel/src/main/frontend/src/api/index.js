@@ -152,5 +152,54 @@ export default {
   // 编辑历史
   editHistory: {
     getChapterHistory: (chapterId) => api.get(`/edit-history/chapter/${chapterId}`)
+  },
+
+  // 写作风格管理
+  writingStyles: {
+    getByNovelId: (novelId) => api.get(`/writing-styles/novel/${novelId}`),
+    extract: (novelId, chapterId) => api.post('/writing-styles/extract', { novelId, chapterId }),
+    update: (novelId, data) => api.put(`/writing-styles/novel/${novelId}`, data),
+    getTemplates: () => api.get('/writing-styles/templates'),
+    validate: (data) => api.post('/writing-styles/validate', data),
+    compare: (novelId, chapterId) => api.get(`/writing-styles/compare/${novelId}/${chapterId}`)
+  },
+
+  // 伏笔管理
+  plotHooks: {
+    getByNovelId: (novelId) => api.get(`/plot-hooks/novel/${novelId}`),
+    getByStatus: (novelId, status) => api.get(`/plot-hooks/novel/${novelId}/status/${status}`),
+    get: (id) => api.get(`/plot-hooks/${id}`),
+    create: (data) => api.post('/plot-hooks', data),
+    update: (id, data) => api.put(`/plot-hooks/${id}`, data),
+    delete: (id) => api.delete(`/plot-hooks/${id}`),
+    hint: (id) => api.put(`/plot-hooks/${id}/hint`),
+    trigger: (id, chapterNumber) => api.put(`/plot-hooks/${id}/trigger`, null, { params: { chapterNumber } }),
+    resolve: (id, chapterNumber, note) => api.put(`/plot-hooks/${id}/resolve`, null, { params: { chapterNumber, note } }),
+    detectFromChapter: (novelId, chapterNumber) => api.post(`/plot-hooks/detect/${novelId}/${chapterNumber}`),
+    getOverdue: (novelId) => api.get(`/plot-hooks/novel/${novelId}/overdue`),
+    getStatistics: (novelId) => api.get(`/plot-hooks/novel/${novelId}/statistics`)
+  },
+
+  // 章节分析
+  chapterAnalysis: {
+    analyze: (novelId, chapterId) => api.post(`/chapter-analysis/analyze/${novelId}/${chapterId}`),
+    getByChapterId: (chapterId) => api.get(`/chapter-analysis/chapter/${chapterId}`),
+    getByNovelId: (novelId) => api.get(`/chapter-analysis/novel/${novelId}`),
+    getStatistics: (novelId) => api.get(`/chapter-analysis/novel/${novelId}/statistics`),
+    delete: (id) => api.delete(`/chapter-analysis/${id}`)
+  },
+
+  // 智能推荐
+  suggestions: {
+    generateForNovel: (novelId) => api.post(`/suggestions/generate/novel/${novelId}`),
+    generateForChapter: (chapterId, novelId) => api.post(`/suggestions/generate/chapter/${chapterId}`, null, { params: { novelId } }),
+    getByNovelId: (novelId) => api.get(`/suggestions/novel/${novelId}`),
+    getActive: (novelId) => api.get(`/suggestions/novel/${novelId}/active`),
+    getByType: (novelId, type) => api.get(`/suggestions/novel/${novelId}/type/${type}`),
+    getHighPriority: (novelId, threshold = 7) => api.get(`/suggestions/novel/${novelId}/high-priority`, { params: { threshold } }),
+    accept: (id, feedback) => api.put(`/suggestions/${id}/accept`, feedback),
+    reject: (id, reason) => api.put(`/suggestions/${id}/reject`, reason),
+    getStatistics: (novelId) => api.get(`/suggestions/novel/${novelId}/statistics`),
+    cleanup: (novelId) => api.delete(`/suggestions/novel/${novelId}/cleanup`)
   }
 }

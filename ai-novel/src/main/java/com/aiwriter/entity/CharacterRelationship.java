@@ -2,63 +2,49 @@ package com.aiwriter.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.EqualsAndHashCode;
+import java.time.LocalDateTime;
 
 /**
  * 角色关系实体
- * 对应Python的CharacterRelationship模型
  */
 @Data
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "character_relationships", indexes = {
-    @Index(name = "idx_character1", columnList = "character1_id"),
-    @Index(name = "idx_character2", columnList = "character2_id")
-})
-public class CharacterRelationship extends BaseEntity {
+@Table(name = "character_relationships")
+public class CharacterRelationship {
     
-    /**
-     * 角色1的ID
-     */
-    @Column(name = "character1_id", nullable = false)
-    private Long character1Id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     
-    /**
-     * 角色2的ID
-     */
-    @Column(name = "character2_id", nullable = false)
-    private Long character2Id;
+    @Column(name = "character_id", nullable = false)
+    private Long characterId;
     
-    /**
-     * 关系类型（family, friend, lover, enemy, mentor, rival等）
-     */
-    @Column(name = "relationship_type", length = 50, nullable = false)
+    @Column(name = "related_character_id", nullable = false)
+    private Long relatedCharacterId;
+    
+    @Column(name = "relationship_type", nullable = false, length = 50)
     private String relationshipType;
     
-    /**
-     * 关系描述
-     */
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    /**
-     * 亲密度（0-100）
-     */
-    private Integer intimacy = 50;
+    @Column(columnDefinition = "INT DEFAULT 0")
+    private Integer strength;
     
-    /**
-     * 关系建立章节ID
-     */
-    @Column(name = "established_in_chapter_id")
-    private Long establishedInChapterId;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
     
-    /**
-     * 关系状态（active, broken, evolving）
-     */
-    @Column(length = 20)
-    private String status;
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+    
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

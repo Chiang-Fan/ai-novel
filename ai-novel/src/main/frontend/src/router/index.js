@@ -4,12 +4,23 @@ import NovelList from '../views/NovelList.vue'
 import NovelCreate from '../views/NovelCreate.vue'
 import NovelDetail from '../views/NovelDetail.vue'
 import ChapterWriteEnhanced from '../views/ChapterWriteEnhanced.vue'
+import ChapterEditWithContinuation from '../views/ChapterEditWithContinuation.vue'
 import ChapterSmartCreate from '../views/ChapterSmartCreate.vue'
 import SmartWriting from '../views/SmartWriting.vue'
+import ConversationPanel from '../views/ConversationPanel.vue'
+import VersionManager from '../views/VersionManager.vue'
+import CharacterGrowthPanel from '../views/CharacterGrowthPanel.vue'
+import SceneManagementPanel from '../views/SceneManagementPanel.vue'
+import RelationshipGraphPanel from '../views/RelationshipGraphPanel.vue'
+import AtmosphereGenerationPanel from '../views/AtmosphereGenerationPanel.vue'
 import CharacterList from '../views/CharacterList.vue'
 import SceneList from '../views/SceneList.vue'
 import OutlineEditor from '../views/OutlineEditor.vue'
 import EditHistory from '../views/EditHistory.vue'
+import WritingStyleManager from '../views/WritingStyleManager.vue'
+import PlotHookManager from '../views/PlotHookManager.vue'
+import ChapterAnalysisViewer from '../views/ChapterAnalysisViewer.vue'
+import SuggestionManager from '../views/SuggestionManager.vue'
 import Login from '../views/Login.vue'
 
 const routes = [
@@ -78,6 +89,72 @@ const routes = [
     name: 'EditHistory',
     component: EditHistory,
     meta: { title: '编辑历史' }
+  },
+  {
+    path: '/novel/:id/writing-style',
+    name: 'WritingStyleManager',
+    component: WritingStyleManager,
+    meta: { title: '文风管理' }
+  },
+  {
+    path: '/novel/:id/plot-hooks',
+    name: 'PlotHookManager',
+    component: PlotHookManager,
+    meta: { title: '伏笔管理' }
+  },
+  {
+    path: '/novel/:id/chapter-analysis',
+    name: 'ChapterAnalysisViewer',
+    component: ChapterAnalysisViewer,
+    meta: { title: '章节分析' }
+  },
+  {
+    path: '/novel/:id/suggestions',
+    name: 'SuggestionManager',
+    component: SuggestionManager,
+    meta: { title: '智能推荐' }
+  },
+  {
+    path: '/novel/:novelId/chapter/:chapterId/edit',
+    name: 'ChapterEditWithContinuation',
+    component: ChapterEditWithContinuation,
+    meta: { title: '章节编辑' }
+  },
+  {
+    path: '/novel/:novelId/conversation',
+    name: 'ConversationPanel',
+    component: ConversationPanel,
+    meta: { title: 'AI 对话助手' }
+  },
+  {
+    path: '/chapter/:chapterId/versions',
+    name: 'VersionManager',
+    component: VersionManager,
+    meta: { title: '版本管理' }
+  },
+  {
+    path: '/character/:characterId/growth',
+    name: 'CharacterGrowthPanel',
+    component: CharacterGrowthPanel,
+    meta: { title: '角色成长系统' }
+  },
+  {
+    path: '/scene/:sceneId/management',
+    name: 'SceneManagementPanel',
+    component: SceneManagementPanel,
+    meta: { title: '场景动态管理' }
+  },
+  {
+    path: '/novel/:novelId/relationships',
+    name: 'RelationshipGraphPanel',
+    component: RelationshipGraphPanel,
+    meta: { title: '角色关系图谱' }
+  },
+  {
+    path: '/scene/:sceneId/atmosphere',
+    name: 'AtmosphereGenerationPanel',
+    component: AtmosphereGenerationPanel,
+    meta: { title: '场景氛围生成' }
   }
 ]
 

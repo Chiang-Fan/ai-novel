@@ -31,6 +31,8 @@ cp restart-server.sh "$TEMP_DIR/"
 cp init-database-v2.sh "$TEMP_DIR/init-database.sh"
 cp application-prod.yml "$TEMP_DIR/"
 cp src/main/resources/db/schema.sql "$TEMP_DIR/"
+cp fix-continuation-suggestions.sql "$TEMP_DIR/"
+cp fix-table.sh "$TEMP_DIR/"
 
 # 复制文档
 cp DEPLOYMENT.md "$TEMP_DIR/" 2>/dev/null || true

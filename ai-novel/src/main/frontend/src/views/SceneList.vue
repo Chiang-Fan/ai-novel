@@ -140,7 +140,7 @@
               @click="viewScene(scene)"
               class="mt-4 w-full py-2 text-sm text-green-600 hover:bg-green-50 rounded-lg transition-colors font-medium"
             >
-              查看完整信息
+              📊 场景管理面板
             </button>
           </div>
         </div>
@@ -233,8 +233,8 @@ const editScene = (scene) => {
 
 // 查看场景
 const viewScene = (scene) => {
-  viewingScene.value = scene
-  showDetailDialog.value = true
+  // 跳转到场景管理面板
+  router.push(`/scene/${scene.id}/management`)
 }
 
 // 删除场景
