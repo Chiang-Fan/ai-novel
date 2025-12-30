@@ -86,4 +86,11 @@ public class ChapterController {
         SmartChapterCreateResponse response = chapterService.createChapterSmart(request);
         return ApiResponse.success("智能创建成功", response);
     }
+    
+    @Operation(summary = "重新提取章节元数据", description = "手动触发重新提取章节的文风、场景、大纲、伏笔等数据")
+    @PostMapping("/{id}/re-extract")
+    public ApiResponse<Void> reExtractChapter(@PathVariable Long id) {
+        chapterService.reExtractChapter(id);
+        return ApiResponse.success("重新提取已触发（异步执行）", null);
+    }
 }

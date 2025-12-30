@@ -227,6 +227,17 @@ public class ChapterService {
     }
     
     /**
+     * 重新提取章节元数据
+     */
+    public void reExtractChapter(Long id) {
+        Chapter chapter = getChapter(id);
+        log.info("手动触发章节{}的元数据重新提取", id);
+        
+        // 触发异步提取
+        autoExtractionService.extractAllFromChapter(chapter);
+    }
+    
+    /**
      * 重新生成章节
      */
     @Transactional
