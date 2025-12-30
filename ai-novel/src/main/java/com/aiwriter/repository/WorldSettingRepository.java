@@ -5,35 +5,20 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * 世界观设定Repository
+ * 世界观设定仓储
  */
 @Repository
 public interface WorldSettingRepository extends JpaRepository<WorldSetting, Long> {
-    
     /**
-     * 查询小说的所有设定
+     * 查询小说的世界观设定
      */
     List<WorldSetting> findByNovelId(Long novelId);
-    
+
     /**
-     * 根据分类查询设定
+     * 查询小说的主要世界观
      */
-    List<WorldSetting> findByNovelIdAndCategory(Long novelId, String category);
-    
-    /**
-     * 根据重要程度查询
-     */
-    List<WorldSetting> findByNovelIdAndImportance(Long novelId, String importance);
-    
-    /**
-     * 模糊查询设定名称
-     */
-    List<WorldSetting> findByNovelIdAndNameContaining(Long novelId, String keyword);
-    
-    /**
-     * 统计设定数
-     */
-    long countByNovelId(Long novelId);
+    Optional<WorldSetting> findFirstByNovelIdOrderByCreatedAtDesc(Long novelId);
 }

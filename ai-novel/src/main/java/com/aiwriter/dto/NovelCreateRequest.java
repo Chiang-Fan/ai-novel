@@ -8,7 +8,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 小说创建请求DTO
+ * 小说创建请求DTO - 强化版
+ * 要求：大纲和初始场景必填
  */
 @Data
 public class NovelCreateRequest {
@@ -27,5 +28,22 @@ public class NovelCreateRequest {
     private String targetAudience;
     
     private String writingStyle;
+    
+    /**
+     * 初始大纲ID - 必填
+     */
+    @jakarta.validation.constraints.NotNull(message = "初始大纲不能为空")
+    private Long initialOutlineId;
+    
+    /**
+     * 初始场景ID - 必填
+     */
+    @jakarta.validation.constraints.NotNull(message = "初始场景不能为空")
+    private Long initialSceneId;
+    
+    /**
+     * 是否使用AI推荐辅助
+     */
+    private Boolean useAiRecommendation = true;
 }
 

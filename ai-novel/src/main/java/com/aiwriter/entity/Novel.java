@@ -60,7 +60,49 @@ public class Novel extends BaseEntity {
     @Column(name = "total_words")
     private Integer totalWords = 0;
     
+    /**
+     * 初始大纲ID（必填）
+     */
+    @Column(name = "initial_outline_id")
+    private Long initialOutlineId;
+    
+    /**
+     * 初始场景ID（必填）
+     */
+    @Column(name = "initial_scene_id")
+    private Long initialSceneId;
+    
+    /**
+     * 是否使用AI推荐辅助
+     */
+    @Column(name = "use_ai_recommendation")
+    private Boolean useAiRecommendation = true;
+    
     // Getters and Setters
+    
+    public Long getInitialOutlineId() {
+        return initialOutlineId;
+    }
+    
+    public void setInitialOutlineId(Long initialOutlineId) {
+        this.initialOutlineId = initialOutlineId;
+    }
+    
+    public Long getInitialSceneId() {
+        return initialSceneId;
+    }
+    
+    public void setInitialSceneId(Long initialSceneId) {
+        this.initialSceneId = initialSceneId;
+    }
+    
+    public Boolean getUseAiRecommendation() {
+        return useAiRecommendation;
+    }
+    
+    public void setUseAiRecommendation(Boolean useAiRecommendation) {
+        this.useAiRecommendation = useAiRecommendation;
+    }
     public String getTitle() {
         return title;
     }

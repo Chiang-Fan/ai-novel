@@ -7,14 +7,19 @@
       <option name="url" value="https://mirrors.tencent.com/repository/maven/thirdparty/" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="https://repo.maven.apache.org/maven2" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="tencent_finance_tms-snapshots" />
       <option name="name" value="tencent_finance_tms-snapshots" />
       <option name="url" value="https://mirrors.tencent.com/repository/maven/tencent_finance_tms-snapshots" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="central" />
-      <option name="name" value="Central Repository" />
-      <option name="url" value="https://repo.maven.apache.org/maven2" />
+      <option name="id" value="build-task-tool" />
+      <option name="name" value="build-task-tool" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/build-task-tool" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="tencent_public" />
@@ -67,14 +72,14 @@
       <option name="url" value="https://mirrors.tencent.com/repository/maven/csig-prod-mid-dev02-snapshot/" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="bcp-snapshots" />
-      <option name="name" value="bcp-snapshots" />
-      <option name="url" value="https://mirrors.tencent.com/repository/maven/tencent_finance_tms-snapshots/" />
-    </remote-repository>
-    <remote-repository>
       <option name="id" value="spring-milestones" />
       <option name="name" value="Spring Milestones" />
       <option name="url" value="https://repo.spring.io/milestone" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="bcp-snapshots" />
+      <option name="name" value="bcp-snapshots" />
+      <option name="url" value="https://mirrors.tencent.com/repository/maven/tencent_finance_tms-snapshots/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="tsf" />

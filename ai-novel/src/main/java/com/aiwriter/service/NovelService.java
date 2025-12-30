@@ -3,8 +3,12 @@ package com.aiwriter.service;
 import com.aiwriter.dto.NovelCreateRequest;
 import com.aiwriter.dto.NovelUpdateRequest;
 import com.aiwriter.entity.Novel;
+import com.aiwriter.entity.Outline;
+import com.aiwriter.entity.Scene;
 import com.aiwriter.repository.ChapterRepository;
 import com.aiwriter.repository.NovelRepository;
+import com.aiwriter.repository.OutlineRepository;
+import com.aiwriter.repository.SceneRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,7 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * 小说服务
+ * 小说服务 - 增强版
+ * 支持大纲和场景必填验证、AI推荐
  */
 @Slf4j
 @Service
@@ -22,24 +27,45 @@ public class NovelService {
     
     private final NovelRepository novelRepository;
     private final ChapterRepository chapterRepository;
+    private final OutlineRepository outlineRepository;
+    private final SceneRepository sceneRepository;
     
     /**
-     * 创建小说
+     * 创建小说 - 强化版
+     * 要求：大纲和初始场景必填
      */
     @Transactional
     public Novel createNovel(NovelCreateRequest request) {
+        // 验证大纲存在
+        Outline outline = outlineRepository.findById(request.getInitialOutlineId())
+            .orElseThrow(() -> new IllegalArgumentException(
+                "大纲不存在: " + request.getInitialOutlineId()));
+        
+        // 验证场景存在
+        Scene scene = sceneRepository.findById(request.getInitialSceneId())
+            .orElseThrow(() -> new IllegalArgumentException(
+                "场景不存在: " + request.getInitialSceneId()));
+        
+        // 创建小说实体
         Novel novel = new Novel();
         novel.setTitle(request.getTitle());
         novel.setDescription(request.getDescription());
         novel.setGenre(request.getGenre());
         novel.setTargetAudience(request.getTargetAudience());
         novel.setWritingStyle(request.getWritingStyle());
-        novel.setStatus("planning"); // 默认状态
+        novel.setInitialOutlineId(request.getInitialOutlineId());
+        novel.setInitialSceneId(request.getInitialSceneId());
+        novel.setUseAiRecommendation(request.getUseAiRecommendation() != null ? 
+            request.getUseAiRecommendation() : true);
+        novel.setStatus("planning");
         novel.setTotalChapters(0);
         novel.setTotalWords(0);
         
         Novel saved = novelRepository.save(novel);
-        // log.info("创建小说成功: id={}, title={}", saved.getId(), saved.getTitle());
+        log.info("创建小说成功: id={}, title={}, outlineId={}, sceneId={}", 
+            saved.getId(), saved.getTitle(), request.getInitialOutlineId(), 
+            request.getInitialSceneId());
+        
         return saved;
     }
     
