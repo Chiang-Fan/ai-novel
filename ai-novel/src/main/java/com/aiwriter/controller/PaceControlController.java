@@ -43,7 +43,7 @@ public class PaceControlController {
             @PathVariable Long sceneId) {
         log.info("获取场景字数分析: sceneId={}", sceneId);
         SceneWordCountAnalysis analysis = wordCountService.getSceneWordCountAnalysis(sceneId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "获取成功", analysis));
+        return ResponseEntity.ok(ApiResponse.success("获取成功", analysis));
     }
     
     @GetMapping("/word-count/novel/{novelId}")
@@ -53,7 +53,7 @@ public class PaceControlController {
             @PathVariable Long novelId) {
         log.info("获取小说场景字数分析: novelId={}", novelId);
         List<SceneWordCountAnalysis> analyses = wordCountService.getNovelSceneWordAnalysis(novelId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "获取成功", analyses));
+        return ResponseEntity.ok(ApiResponse.success("获取成功", analyses));
     }
     
     @PostMapping("/word-count/target")
@@ -64,7 +64,7 @@ public class PaceControlController {
             @RequestParam Integer maxWords) {
         log.info("设置场景字数目标: sceneId={}, min={}, max={}", sceneId, minWords, maxWords);
         SceneWordCountTarget target = wordCountService.setSceneWordCountTarget(sceneId, minWords, maxWords);
-        return ResponseEntity.ok(new ApiResponse<>(true, "设置成功", target));
+        return ResponseEntity.ok(ApiResponse.success("设置成功", target));
     }
     
     @PostMapping("/word-count/validate")
@@ -77,7 +77,7 @@ public class PaceControlController {
         log.info("验证章节字数: sceneId={}, chapterId={}", sceneId, chapterId);
         Map<String, Object> result = wordCountService.validateChapterWordCount(
             sceneId, chapterId, targetMinWords, targetMaxWords);
-        return ResponseEntity.ok(new ApiResponse<>(true, "验证成功", result));
+        return ResponseEntity.ok(ApiResponse.success("验证成功", result));
     }
     
     @GetMapping("/word-count/summary/{novelId}")
@@ -87,7 +87,7 @@ public class PaceControlController {
             @PathVariable Long novelId) {
         log.info("获取小说字数统计: novelId={}", novelId);
         Map<String, Object> summary = wordCountService.getNovelWordCountSummary(novelId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "获取成功", summary));
+        return ResponseEntity.ok(ApiResponse.success("获取成功", summary));
     }
     
     @GetMapping("/word-count/optimization-suggestions/{novelId}")
@@ -97,7 +97,7 @@ public class PaceControlController {
             @PathVariable Long novelId) {
         log.info("获取字数优化建议: novelId={}", novelId);
         List<Map<String, Object>> suggestions = wordCountService.getWordCountOptimizationSuggestions(novelId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "获取成功", suggestions));
+        return ResponseEntity.ok(ApiResponse.success("获取成功", suggestions));
     }
     
     // ==================== 节奏分析模块 ====================
@@ -109,7 +109,7 @@ public class PaceControlController {
             @PathVariable Long sceneId) {
         log.info("分析场景节奏: sceneId={}", sceneId);
         SceneRhythmAnalysis analysis = rhythmService.analyzeSceneRhythm(sceneId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "分析成功", analysis));
+        return ResponseEntity.ok(ApiResponse.success("分析成功", analysis));
     }
     
     @GetMapping("/rhythm/novel/{novelId}")
@@ -119,7 +119,7 @@ public class PaceControlController {
             @PathVariable Long novelId) {
         log.info("分析小说节奏: novelId={}", novelId);
         Map<String, Object> analysis = rhythmService.analyzeNovelRhythm(novelId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "分析成功", analysis));
+        return ResponseEntity.ok(ApiResponse.success("分析成功", analysis));
     }
     
     @GetMapping("/rhythm/recommendations/{novelId}")
@@ -129,7 +129,7 @@ public class PaceControlController {
             @PathVariable Long novelId) {
         log.info("获取节奏优化建议: novelId={}", novelId);
         List<RhythmRecommendation> recommendations = rhythmService.getRhythmRecommendations(novelId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "获取成功", recommendations));
+        return ResponseEntity.ok(ApiResponse.success("获取成功", recommendations));
     }
     
     // ==================== 实时反馈模块 ====================
@@ -142,7 +142,7 @@ public class PaceControlController {
             @RequestParam Long novelId) {
         log.info("获取章节反馈: chapterId={}, novelId={}", chapterId, novelId);
         PaceFeedback feedback = feedbackService.getChapterFeedback(chapterId, novelId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "获取成功", feedback));
+        return ResponseEntity.ok(ApiResponse.success("获取成功", feedback));
     }
     
     @GetMapping("/feedback/novel/{novelId}")
@@ -152,7 +152,7 @@ public class PaceControlController {
             @PathVariable Long novelId) {
         log.info("获取小说反馈: novelId={}", novelId);
         Map<String, Object> feedback = feedbackService.getNovelPaceFeedback(novelId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "获取成功", feedback));
+        return ResponseEntity.ok(ApiResponse.success("获取成功", feedback));
     }
     
     @PostMapping("/feedback/report")
@@ -161,7 +161,7 @@ public class PaceControlController {
             @RequestParam Long novelId) {
         log.info("生成节奏控制报告: novelId={}", novelId);
         Map<String, Object> report = feedbackService.generatePaceControlReport(novelId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "生成成功", report));
+        return ResponseEntity.ok(ApiResponse.success("生成成功", report));
     }
     
     // ==================== 综合模块 ====================
@@ -178,6 +178,6 @@ public class PaceControlController {
         comprehensive.put("rhythmAnalysis", rhythmService.analyzeNovelRhythm(novelId));
         comprehensive.put("novelFeedback", feedbackService.getNovelPaceFeedback(novelId));
         
-        return ResponseEntity.ok(new ApiResponse<>(true, "获取成功", comprehensive));
+        return ResponseEntity.ok(ApiResponse.success("获取成功", comprehensive));
     }
 }

@@ -254,9 +254,7 @@ public class EnhancedContinuationService {
             if (qualityScoreValue != null) {
                 compositeScore = (compositeScore + qualityScoreValue) / 2;
             }
-            recommendation.getSuggestions().forEach(s -> 
-                recommendation.getModificationSuggestions().add(s.getSuggestion())
-            );
+            // 质量评分的建议已经在前面添加到improvementPoints中了
         }
         
         recommendation.setCompositeScore(compositeScore);

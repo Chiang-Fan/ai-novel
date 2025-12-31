@@ -25,6 +25,7 @@ public class PlotConsistencyCheckService {
     private final OutlineRepository outlineRepository;
     private final CharacterRepository characterRepository;
     private final SceneRepository sceneRepository;
+    private final NovelRepository novelRepository;
     private final ContentAnalysisService contentAnalysisService;
     private final CharacterGrowthService characterGrowthService;
 
@@ -273,8 +274,8 @@ public class PlotConsistencyCheckService {
         
         for (Outline outline : outlines) {
             // 如果大纲明确说不应该发生某事，但续写中发生了
-            if (outline.getDescription() != null && outline.getDescription().contains("不能") 
-                && continuationText.contains(extractAfterKeyword(outline.getDescription(), "不能"))) {
+            if (outline.getSummary() != null && outline.getSummary().contains("不能") 
+                && continuationText.contains(extractAfterKeyword(outline.getSummary(), "不能"))) {
                 
                 PlotConflict conflict = new PlotConflict();
                 conflict.setType("OUTLINE_CONFLICT");
@@ -372,7 +373,8 @@ public class PlotConsistencyCheckService {
         // 获取章节的小说
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new RuntimeException("章节不存在"));
-        Novel novel = chapter.getNovel();
+        Novel novel = novelRepository.findById(chapter.getNovelId())
+                .orElseThrow(() -> new RuntimeException("小说不存在"));
         
         String expectedStyle = novel.getWritingStyle();
         
@@ -406,9 +408,9 @@ public class PlotConsistencyCheckService {
         
         List<CharacterConsistencyCheck> checks = new ArrayList<>();
         
-        List<Character> characters = characterRepository.findByNovelId(novelId);
+        List<com.aiwriter.entity.Character> characters = characterRepository.findByNovelIdOrderByRoleTypeAsc(novelId);
         
-        for (Character character : characters) {
+        for (com.aiwriter.entity.Character character : characters) {
             CharacterConsistencyCheck check = new CharacterConsistencyCheck();
             check.setCharacterId(character.getId());
             check.setCharacterName(character.getName());

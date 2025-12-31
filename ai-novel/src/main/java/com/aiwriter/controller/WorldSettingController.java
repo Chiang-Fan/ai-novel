@@ -32,7 +32,7 @@ public class WorldSettingController {
             @Valid @RequestBody WorldSettingRequest request) {
         WorldSetting worldSetting = worldSettingService.createWorldSetting(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(worldSetting, "世界观创建成功"));
+                .body(ApiResponse.success("世界观创建成功", worldSetting));
     }
 
     /**
@@ -59,7 +59,7 @@ public class WorldSettingController {
     @PutMapping("/{id}/publish")
     public ResponseEntity<ApiResponse<WorldSetting>> publishWorldSetting(@PathVariable Long id) {
         WorldSetting worldSetting = worldSettingService.publishWorldSetting(id);
-        return ResponseEntity.ok(ApiResponse.success(worldSetting, "世界观发布成功"));
+        return ResponseEntity.ok(ApiResponse.success("世界观发布成功", worldSetting));
     }
 
     // ========== 地理位置接口 ==========
@@ -72,7 +72,7 @@ public class WorldSettingController {
             @Valid @RequestBody GeographySettingRequest request) {
         GeographySetting geography = worldSettingService.createGeographySetting(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(geography, "地理位置创建成功"));
+                .body(ApiResponse.success("地理位置创建成功", geography));
     }
 
     /**
@@ -94,7 +94,7 @@ public class WorldSettingController {
             @Valid @RequestBody TimePeriodSettingRequest request) {
         TimePeriodSetting timePeriod = worldSettingService.createTimePeriodSetting(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(timePeriod, "时代背景创建成功"));
+                .body(ApiResponse.success("时代背景创建成功", timePeriod));
     }
 
     /**
@@ -116,7 +116,7 @@ public class WorldSettingController {
             @Valid @RequestBody RaceSettingRequest request) {
         RaceSetting race = worldSettingService.createRaceSetting(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(race, "种族创建成功"));
+                .body(ApiResponse.success("种族创建成功", race));
     }
 
     /**
@@ -138,7 +138,7 @@ public class WorldSettingController {
             @Valid @RequestBody MagicSystemSettingRequest request) {
         MagicSystemSetting magicSystem = worldSettingService.createMagicSystemSetting(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(magicSystem, "魔法系统创建成功"));
+                .body(ApiResponse.success("魔法系统创建成功", magicSystem));
     }
 
     /**
@@ -158,7 +158,7 @@ public class WorldSettingController {
             @PathVariable Long id,
             @Valid @RequestBody MagicSystemSettingRequest request) {
         MagicSystemSetting magicSystem = worldSettingService.updateMagicSystemSetting(id, request);
-        return ResponseEntity.ok(ApiResponse.success(magicSystem, "魔法系统更新成功"));
+        return ResponseEntity.ok(ApiResponse.success("魔法系统更新成功", magicSystem));
     }
 
     /**
@@ -167,7 +167,7 @@ public class WorldSettingController {
     @DeleteMapping("/magic-system/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteMagicSystem(@PathVariable Long id) {
         worldSettingService.deleteMagicSystemSetting(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "魔法系统删除成功"));
+        return ResponseEntity.ok(ApiResponse.success("魔法系统删除成功", null));
     }
 
     /**

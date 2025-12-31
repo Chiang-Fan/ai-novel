@@ -27,9 +27,14 @@ public class WritingStyleController {
      */
     @GetMapping
     public ApiResponse<List<WritingStyleResponse>> getStyles(
-            @RequestParam(required = false) String category) {
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Boolean includeAll) {
         List<WritingStyle> styles;
-        if (category != null && !category.isEmpty()) {
+        
+        if (includeAll != null && includeAll) {
+            // 返回所有文风（包括自动提取的）
+            styles = styleRepository.findAll();
+        } else if (category != null && !category.isEmpty()) {
             styles = styleRepository.findByCategoryOrderByUsageCountDesc(category);
         } else {
             styles = styleRepository.findByIsSystemTrueOrderByUsageCountDesc();

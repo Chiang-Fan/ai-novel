@@ -46,7 +46,7 @@ public class TextImportController {
                     .body(ApiResponse.error(textImport.getErrorMessage()));
         }
 
-        return ResponseEntity.ok(ApiResponse.success(textImport, "文本文件已上传并解析"));
+        return ResponseEntity.ok(ApiResponse.success("文本文件已上传并解析", textImport));
     }
 
     /**
@@ -73,7 +73,7 @@ public class TextImportController {
     @PostMapping("/{importId}/extract-elements")
     public ResponseEntity<ApiResponse<TextImport>> extractKeyElements(@PathVariable Long importId) {
         textImportService.extractKeyElements(importId);
-        return ResponseEntity.ok(ApiResponse.success(null, "关键要素提取成功"));
+        return ResponseEntity.ok(ApiResponse.success("关键要素提取成功", null));
     }
 
     /**
@@ -91,6 +91,6 @@ public class TextImportController {
     @PostMapping("/{importId}/confirm")
     public ResponseEntity<ApiResponse<Void>> confirmImport(@PathVariable Long importId) {
         textImportService.confirmImport(importId);
-        return ResponseEntity.ok(ApiResponse.success(null, "导入已确认"));
+        return ResponseEntity.ok(ApiResponse.success("导入已确认", null));
     }
 }

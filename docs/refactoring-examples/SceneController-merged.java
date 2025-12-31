@@ -1,6 +1,7 @@
 package com.aiwriter.controller;
 
 import com.aiwriter.dto.*;
+import com.aiwriter.entity.Scene;
 import com.aiwriter.service.SceneService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,6 +41,11 @@ public class SceneController {
     
     /**
      * 获取小说的所有场景
+     * 
+     * @param novelId 小说ID
+     * @param type 场景类型过滤（可选）：interior/exterior/fantasy/realistic
+     * @param keyword 关键词搜索（可选）：搜索场景名称和描述
+     * @return 场景列表
      */
     @Operation(summary = "获取小说场景列表", description = "支持按类型过滤和关键词搜索")
     @GetMapping("/novel/{novelId}")
@@ -47,7 +53,7 @@ public class SceneController {
             @Parameter(description = "小说ID", required = true)
             @PathVariable Long novelId,
             
-            @Parameter(description = "场景类型过滤")
+            @Parameter(description = "场景类型：interior/exterior/fantasy/realistic")
             @RequestParam(required = false) String type,
             
             @Parameter(description = "搜索关键词")
@@ -80,9 +86,7 @@ public class SceneController {
     public ApiResponse<SceneResponse> createScene(
             @Valid @RequestBody CreateSceneRequest request) {
         
-        log.info("创建场景: name={}, type={}", 
-                request.getSceneName(),
-                request.getSceneType());
+        log.info("创建场景: name={}, type={}", request.getName(), request.getType());
         SceneResponse created = sceneService.createScene(request);
         return ApiResponse.success("创建成功", created);
     }
@@ -122,14 +126,16 @@ public class SceneController {
     
     /**
      * AI推荐场景
+     * 
+     * 基于当前情节、角色、氛围等因素，智能推荐适合的场景
      */
     @Operation(summary = "AI推荐场景", description = "基于情节和氛围智能推荐场景")
     @PostMapping("/recommend")
     public ApiResponse<List<SceneRecommendationResponse>> recommendScenes(
             @Valid @RequestBody SceneRecommendationRequest request) {
         
-        log.info("AI推荐场景: novelId={}, count={}", 
-                request.getNovelId(), request.getCount());
+        log.info("AI推荐场景: novelId={}, context={}", 
+                request.getNovelId(), request.getContext());
         
         List<SceneRecommendationResponse> recommendations = 
             sceneService.recommendScenes(request);
@@ -142,22 +148,22 @@ public class SceneController {
     // ========================================
     
     /**
-     * 记录场景使用（支持两种路径）
+     * 记录场景使用
+     * 
+     * 当场景在章节中被使用时，记录使用信息
+     * 用于跟踪场景的出现频率和使用情况
      */
     @Operation(summary = "记录场景使用", description = "记录场景在章节中的使用")
-    @PostMapping(value = {"/{id}/usages", "/usages"})
+    @PostMapping("/{id}/usages")
     public ApiResponse<SceneUsageResponse> recordSceneUsage(
-            @Parameter(description = "场景ID")
-            @PathVariable(required = false) Long id,
+            @Parameter(description = "场景ID", required = true)
+            @PathVariable Long id,
             @Valid @RequestBody CreateSceneUsageRequest request) {
         
-        // 支持两种方式：路径参数或请求体中的sceneId
-        if (id != null) {
-            request.setSceneId(id);
-        }
+        log.info("记录场景使用: sceneId={}, chapterId={}", id, request.getChapterId());
         
-        log.info("记录场景使用: sceneId={}, chapterId={}", 
-                request.getSceneId(), request.getChapterId());
+        // 确保请求中的sceneId与路径参数一致
+        request.setSceneId(id);
         
         SceneUsageResponse usage = sceneService.recordSceneUsage(request);
         return ApiResponse.success("记录成功", usage);
@@ -165,6 +171,8 @@ public class SceneController {
     
     /**
      * 获取场景使用历史
+     * 
+     * 查看场景在哪些章节中被使用过
      */
     @Operation(summary = "获取场景使用历史")
     @GetMapping("/{id}/usages")
@@ -178,13 +186,13 @@ public class SceneController {
     }
     
     /**
-     * 删除场景使用记录（支持两种路径）
+     * 删除场景使用记录
      */
     @Operation(summary = "删除场景使用记录")
-    @DeleteMapping(value = {"/{id}/usages/{usageId}", "/usages/{usageId}"})
+    @DeleteMapping("/{id}/usages/{usageId}")
     public ApiResponse<Void> deleteSceneUsage(
-            @Parameter(description = "场景ID")
-            @PathVariable(required = false) Long id,
+            @Parameter(description = "场景ID", required = true)
+            @PathVariable Long id,
             
             @Parameter(description = "使用记录ID", required = true)
             @PathVariable Long usageId) {
@@ -199,22 +207,22 @@ public class SceneController {
     // ========================================
     
     /**
-     * 记录场景变化（支持两种路径）
+     * 记录场景变化
+     * 
+     * 当场景的重要属性发生变化时（如环境、氛围、时间等），
+     * 记录变化信息，用于跟踪场景的演变
      */
     @Operation(summary = "记录场景变化", description = "记录场景随情节发展的变化")
-    @PostMapping(value = {"/{id}/changes", "/changes"})
+    @PostMapping("/{id}/changes")
     public ApiResponse<SceneChangeResponse> recordSceneChange(
-            @Parameter(description = "场景ID")
-            @PathVariable(required = false) Long id,
+            @Parameter(description = "场景ID", required = true)
+            @PathVariable Long id,
             @Valid @RequestBody CreateSceneChangeRequest request) {
         
-        // 支持两种方式
-        if (id != null) {
-            request.setSceneId(id);
-        }
+        log.info("记录场景变化: sceneId={}, changeType={}", id, request.getChangeType());
         
-        log.info("记录场景变化: sceneId={}, changeType={}", 
-                request.getSceneId(), request.getChangeType());
+        // 确保请求中的sceneId与路径参数一致
+        request.setSceneId(id);
         
         SceneChangeResponse change = sceneService.recordSceneChange(request);
         return ApiResponse.success("记录成功", change);
@@ -222,6 +230,8 @@ public class SceneController {
     
     /**
      * 获取场景变化历史
+     * 
+     * 查看场景的演变过程
      */
     @Operation(summary = "获取场景变化历史")
     @GetMapping("/{id}/changes")
@@ -235,13 +245,13 @@ public class SceneController {
     }
     
     /**
-     * 删除场景变化记录（支持两种路径）
+     * 删除场景变化记录
      */
     @Operation(summary = "删除场景变化记录")
-    @DeleteMapping(value = {"/{id}/changes/{changeId}", "/changes/{changeId}"})
+    @DeleteMapping("/{id}/changes/{changeId}")
     public ApiResponse<Void> deleteSceneChange(
-            @Parameter(description = "场景ID")
-            @PathVariable(required = false) Long id,
+            @Parameter(description = "场景ID", required = true)
+            @PathVariable Long id,
             
             @Parameter(description = "变化记录ID", required = true)
             @PathVariable Long changeId) {
@@ -257,6 +267,13 @@ public class SceneController {
     
     /**
      * 获取场景统计信息
+     * 
+     * 包括：
+     * - 使用频率
+     * - 出现章节数
+     * - 关联角色数
+     * - 变化次数
+     * - 平均停留时长等
      */
     @Operation(summary = "获取场景统计", description = "获取场景的使用频率、变化趋势等统计数据")
     @GetMapping("/{id}/statistics")
@@ -271,6 +288,8 @@ public class SceneController {
     
     /**
      * 批量获取场景统计
+     * 
+     * 用于分析小说中所有场景的整体使用情况
      */
     @Operation(summary = "批量获取场景统计")
     @GetMapping("/novel/{novelId}/statistics")

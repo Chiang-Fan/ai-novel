@@ -1,15 +1,8 @@
 package com.aiwriter.service;
 
-import com.aiwriter.dto.SceneRecommendationRequest;
-import com.aiwriter.dto.SceneRecommendationResponse;
-import com.aiwriter.entity.Character;
-import com.aiwriter.entity.Chapter;
-import com.aiwriter.entity.Novel;
-import com.aiwriter.entity.Scene;
-import com.aiwriter.entity.WorldSetting;
-import com.aiwriter.repository.ChapterRepository;
-import com.aiwriter.repository.SceneRepository;
-import com.aiwriter.repository.WorldSettingRepository;
+import com.aiwriter.dto.*;
+import com.aiwriter.entity.*;
+import com.aiwriter.repository.*;
 import com.aiwriter.service.ai.AiService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,9 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -31,29 +22,75 @@ public class SceneService {
     private final SceneRepository sceneRepository;
     private final ChapterRepository chapterRepository;
     private final WorldSettingRepository worldSettingRepository;
+    private final SceneUsageRepository sceneUsageRepository;
+    private final SceneChangeRepository sceneChangeRepository;
     private final NovelService novelService;
     private final CharacterService characterService;
     private final AiService aiService;
     private final ObjectMapper objectMapper;
     
+    // ========================================
+    // 基础CRUD操作（返回统一DTO）
+    // ========================================
+    
+    /**
+     * 获取小说的所有场景（支持过滤）
+     */
+    @Transactional(readOnly = true)
+    public List<SceneResponse> getScenesByNovel(Long novelId, String type, String keyword) {
+        List<Scene> scenes;
+        
+        if (type != null && !type.isEmpty()) {
+            scenes = sceneRepository.findByNovelIdAndSceneTypeOrderByNameAsc(novelId, type);
+        } else if (keyword != null && !keyword.isEmpty()) {
+            scenes = sceneRepository.findByNovelIdAndNameContainingOrderByNameAsc(novelId, keyword);
+        } else {
+            scenes = sceneRepository.findByNovelIdOrderByCreatedAtDesc(novelId);
+        }
+        
+        return scenes.stream()
+            .map(this::toSceneResponse)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * 获取小说的所有场景（兼容旧代码，返回Entity）
+     * @deprecated 使用 getScenesByNovel(Long, String, String) 替代
+     */
+    @Deprecated
     @Transactional(readOnly = true)
     public List<Scene> getScenesByNovel(Long novelId) {
         return sceneRepository.findByNovelIdOrderByCreatedAtDesc(novelId);
     }
     
+    /**
+     * 根据ID获取场景Entity（兼容旧代码）
+     * @deprecated 使用 getScene(Long) 替代，返回SceneResponse
+     */
+    @Deprecated
     @Transactional(readOnly = true)
     public Scene getSceneById(Long id) {
         return sceneRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("场景不存在"));
     }
     
+    /**
+     * 创建场景（兼容旧代码，接受Entity）
+     * @deprecated 使用 createScene(CreateSceneRequest) 替代
+     */
+    @Deprecated
     @Transactional
     public Scene createScene(Scene scene) {
         Scene saved = sceneRepository.save(scene);
-        log.info("创建场景成功: {} (小说ID: {})", saved.getName(), saved.getNovelId());
+        log.info("创建场景成功(旧API): {} (小说ID: {})", saved.getName(), saved.getNovelId());
         return saved;
     }
     
+    /**
+     * 更新场景（兼容旧代码，接受Entity）
+     * @deprecated 使用 updateScene(Long, UpdateSceneRequest) 替代
+     */
+    @Deprecated
     @Transactional
     public Scene updateScene(Long id, Scene scene) {
         Scene existing = getSceneById(id);
@@ -72,15 +109,314 @@ public class SceneService {
         existing.setNotes(scene.getNotes());
         
         Scene updated = sceneRepository.save(existing);
-        log.info("更新场景成功: {}", updated.getName());
+        log.info("更新场景成功(旧API): {}", updated.getName());
         return updated;
     }
     
+    /**
+     * 获取场景详情
+     */
+    @Transactional(readOnly = true)
+    public SceneResponse getScene(Long id) {
+        Scene scene = sceneRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("场景不存在"));
+        return toSceneResponse(scene);
+    }
+    
+    /**
+     * 创建场景
+     */
+    @Transactional
+    public SceneResponse createScene(CreateSceneRequest request) {
+        Scene scene = new Scene();
+        scene.setNovelId(request.getNovelId());
+        scene.setName(request.getSceneName());
+        scene.setSceneType(request.getSceneType());
+        scene.setLocation(request.getLocationDesc());
+        scene.setDescription(request.getDescription());
+        scene.setAtmosphere(request.getAtmosphere());
+        scene.setImportanceScore(request.getImportanceScore());
+        
+        // 处理标签
+        if (request.getTags() != null && !request.getTags().isEmpty()) {
+            scene.setTags(String.join(",", request.getTags()));
+        }
+        
+        scene = sceneRepository.save(scene);
+        log.info("创建场景成功: {} (小说ID: {})", scene.getName(), scene.getNovelId());
+        return toSceneResponse(scene);
+    }
+    
+    /**
+     * 更新场景
+     */
+    @Transactional
+    public SceneResponse updateScene(Long id, UpdateSceneRequest request) {
+        Scene scene = sceneRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("场景不存在"));
+        
+        if (request.getSceneName() != null) scene.setName(request.getSceneName());
+        if (request.getSceneType() != null) scene.setSceneType(request.getSceneType());
+        if (request.getLocationDesc() != null) scene.setLocation(request.getLocationDesc());
+        if (request.getDescription() != null) scene.setDescription(request.getDescription());
+        if (request.getAtmosphere() != null) scene.setAtmosphere(request.getAtmosphere());
+        if (request.getImportanceScore() != null) scene.setImportanceScore(request.getImportanceScore());
+        if (request.getIsRecurring() != null) scene.setIsRecurring(request.getIsRecurring());
+        if (request.getTags() != null) {
+            scene.setTags(String.join(",", request.getTags()));
+        }
+        
+        scene = sceneRepository.save(scene);
+        log.info("更新场景成功: {}", scene.getName());
+        return toSceneResponse(scene);
+    }
+    
+    /**
+     * 删除场景
+     */
     @Transactional
     public void deleteScene(Long id) {
         sceneRepository.deleteById(id);
         log.info("删除场景成功: {}", id);
     }
+    
+    // ========================================
+    // 使用记录管理
+    // ========================================
+    
+    /**
+     * 记录场景使用
+     */
+    @Transactional
+    public SceneUsageResponse recordSceneUsage(CreateSceneUsageRequest request) {
+        SceneUsage usage = new SceneUsage();
+        usage.setSceneId(request.getSceneId());
+        usage.setChapterId(request.getChapterId());
+        usage.setUsageTime(request.getUsageTime());
+        usage.setSceneState(request.getSceneState());
+        usage.setWeather(request.getWeather());
+        usage.setTimeOfDay(request.getTimeOfDay());
+        usage.setNotes(request.getNotes());
+        
+        usage = sceneUsageRepository.save(usage);
+        
+        // 更新场景的 isRecurring 标记
+        long usageCount = sceneUsageRepository.countBySceneId(request.getSceneId());
+        if (usageCount > 1) {
+            Scene scene = sceneRepository.findById(request.getSceneId()).orElse(null);
+            if (scene != null && !Boolean.TRUE.equals(scene.getIsRecurring())) {
+                scene.setIsRecurring(true);
+                sceneRepository.save(scene);
+            }
+        }
+        
+        return toSceneUsageResponse(usage);
+    }
+    
+    /**
+     * 获取场景使用历史
+     */
+    @Transactional(readOnly = true)
+    public List<SceneUsageResponse> getSceneUsageHistory(Long sceneId) {
+        List<SceneUsage> usages = sceneUsageRepository.findBySceneIdOrderByUsageTimeDesc(sceneId);
+        return usages.stream()
+            .map(this::toSceneUsageResponse)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * 删除场景使用记录
+     */
+    @Transactional
+    public void deleteSceneUsage(Long usageId) {
+        sceneUsageRepository.deleteById(usageId);
+    }
+    
+    // ========================================
+    // 变化记录管理
+    // ========================================
+    
+    /**
+     * 记录场景变化
+     */
+    @Transactional
+    public SceneChangeResponse recordSceneChange(CreateSceneChangeRequest request) {
+        SceneChange change = new SceneChange();
+        change.setSceneId(request.getSceneId());
+        change.setChangeType(request.getChangeType());
+        change.setChangeDesc(request.getChangeDesc());
+        change.setBeforeState(request.getBeforeState());
+        change.setAfterState(request.getAfterState());
+        change.setRelatedChapterId(request.getRelatedChapterId());
+        
+        change = sceneChangeRepository.save(change);
+        return toSceneChangeResponse(change);
+    }
+    
+    /**
+     * 获取场景变化历史
+     */
+    @Transactional(readOnly = true)
+    public List<SceneChangeResponse> getSceneChangeHistory(Long sceneId) {
+        List<SceneChange> changes = sceneChangeRepository.findBySceneIdOrderByCreatedAtDesc(sceneId);
+        return changes.stream()
+            .map(this::toSceneChangeResponse)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * 删除场景变化记录
+     */
+    @Transactional
+    public void deleteSceneChange(Long changeId) {
+        sceneChangeRepository.deleteById(changeId);
+    }
+    
+    // ========================================
+    // 统计分析
+    // ========================================
+    
+    /**
+     * 获取场景统计
+     */
+    @Transactional(readOnly = true)
+    public SceneStatisticsResponse getSceneStatistics(Long sceneId) {
+        Scene scene = sceneRepository.findById(sceneId)
+            .orElseThrow(() -> new RuntimeException("场景不存在"));
+        
+        long totalUsages = sceneUsageRepository.countBySceneId(sceneId);
+        
+        SceneUsage firstUsage = sceneUsageRepository.findFirstBySceneIdOrderByUsageTimeAsc(sceneId);
+        SceneUsage lastUsage = sceneUsageRepository.findFirstBySceneIdOrderByUsageTimeDesc(sceneId);
+        
+        String firstChapter = "";
+        String lastChapter = "";
+        
+        if (firstUsage != null) {
+            Chapter chapter = chapterRepository.findById(firstUsage.getChapterId()).orElse(null);
+            firstChapter = chapter != null ? chapter.getTitle() : "";
+        }
+        
+        if (lastUsage != null) {
+            Chapter chapter = chapterRepository.findById(lastUsage.getChapterId()).orElse(null);
+            lastChapter = chapter != null ? chapter.getTitle() : "";
+        }
+        
+        // 按时段统计
+        Map<String, Long> usageByTimeOfDay = new HashMap<>();
+        List<Object[]> timeStats = sceneUsageRepository.countByTimeOfDay(sceneId);
+        for (Object[] stat : timeStats) {
+            if (stat[0] != null) {
+                usageByTimeOfDay.put((String) stat[0], ((Number) stat[1]).longValue());
+            }
+        }
+        
+        // 按天气统计
+        Map<String, Long> usageByWeather = new HashMap<>();
+        List<SceneUsage> allUsages = sceneUsageRepository.findBySceneIdOrderByUsageTimeDesc(sceneId);
+        for (SceneUsage usage : allUsages) {
+            if (usage.getWeather() != null) {
+                usageByWeather.merge(usage.getWeather(), 1L, Long::sum);
+            }
+        }
+        
+        long changeCount = sceneChangeRepository.countBySceneId(sceneId);
+        
+        return SceneStatisticsResponse.builder()
+            .sceneId(sceneId)
+            .sceneName(scene.getName())
+            .totalUsages(totalUsages)
+            .firstUsedChapter(firstChapter)
+            .lastUsedChapter(lastChapter)
+            .usageByTimeOfDay(usageByTimeOfDay)
+            .usageByWeather(usageByWeather)
+            .changeCount(changeCount)
+            .build();
+    }
+    
+    /**
+     * 批量获取场景统计
+     */
+    @Transactional(readOnly = true)
+    public List<SceneStatisticsResponse> getBatchStatistics(Long novelId) {
+        List<Scene> scenes = sceneRepository.findByNovelIdOrderByCreatedAtDesc(novelId);
+        return scenes.stream()
+            .map(scene -> getSceneStatistics(scene.getId()))
+            .collect(Collectors.toList());
+    }
+    
+    // ========================================
+    // 私有辅助方法：DTO转换
+    // ========================================
+    
+    private SceneResponse toSceneResponse(Scene scene) {
+        long usageCount = sceneUsageRepository.countBySceneId(scene.getId());
+        SceneUsage lastUsage = sceneUsageRepository.findFirstBySceneIdOrderByUsageTimeDesc(scene.getId());
+        
+        List<String> tags = new ArrayList<>();
+        if (scene.getTags() != null && !scene.getTags().isEmpty()) {
+            tags = Arrays.asList(scene.getTags().split(","));
+        }
+        
+        return SceneResponse.builder()
+            .id(scene.getId())
+            .novelId(scene.getNovelId())
+            .sceneName(scene.getName())
+            .sceneType(scene.getSceneType())
+            .locationDesc(scene.getLocation())
+            .description(scene.getDescription())
+            .atmosphere(scene.getAtmosphere())
+            .tags(tags)
+            .importanceScore(scene.getImportanceScore())
+            .isRecurring(scene.getIsRecurring())
+            .usageCount(usageCount)
+            .lastUsedAt(lastUsage != null ? lastUsage.getUsageTime() : null)
+            .createdAt(scene.getCreatedAt())
+            .updatedAt(scene.getUpdatedAt())
+            .build();
+    }
+    
+    private SceneUsageResponse toSceneUsageResponse(SceneUsage usage) {
+        Scene scene = sceneRepository.findById(usage.getSceneId()).orElse(null);
+        Chapter chapter = chapterRepository.findById(usage.getChapterId()).orElse(null);
+        
+        return SceneUsageResponse.builder()
+            .id(usage.getId())
+            .sceneId(usage.getSceneId())
+            .sceneName(scene != null ? scene.getName() : "")
+            .chapterId(usage.getChapterId())
+            .chapterTitle(chapter != null ? chapter.getTitle() : "")
+            .usageTime(usage.getUsageTime())
+            .sceneState(usage.getSceneState())
+            .weather(usage.getWeather())
+            .timeOfDay(usage.getTimeOfDay())
+            .notes(usage.getNotes())
+            .createdAt(usage.getCreatedAt())
+            .build();
+    }
+    
+    private SceneChangeResponse toSceneChangeResponse(SceneChange change) {
+        Scene scene = sceneRepository.findById(change.getSceneId()).orElse(null);
+        Chapter chapter = change.getRelatedChapterId() != null ? 
+            chapterRepository.findById(change.getRelatedChapterId()).orElse(null) : null;
+        
+        return SceneChangeResponse.builder()
+            .id(change.getId())
+            .sceneId(change.getSceneId())
+            .sceneName(scene != null ? scene.getName() : "")
+            .changeType(change.getChangeType())
+            .changeDesc(change.getChangeDesc())
+            .beforeState(change.getBeforeState())
+            .afterState(change.getAfterState())
+            .relatedChapterId(change.getRelatedChapterId())
+            .chapterTitle(chapter != null ? chapter.getTitle() : "")
+            .createdAt(change.getCreatedAt())
+            .build();
+    }
+    
+    // ========================================
+    // AI场景推荐
+    // ========================================
     
     /**
      * AI智能推荐场景
@@ -88,8 +424,8 @@ public class SceneService {
     public List<SceneRecommendationResponse> recommendScenes(SceneRecommendationRequest request) {
         try {
             Novel novel = novelService.getNovel(request.getNovelId());
-            List<Scene> existingScenes = getScenesByNovel(request.getNovelId());
-            List<Character> characters = characterService.getCharactersByNovel(request.getNovelId());
+            List<Scene> existingScenes = sceneRepository.findByNovelIdOrderByCreatedAtDesc(request.getNovelId());
+            List<com.aiwriter.entity.Character> characters = characterService.getCharactersByNovel(request.getNovelId());
             
             // 获取地理/历史类世界设定
             List<WorldSetting> worldSettings = worldSettingRepository.findByNovelId(request.getNovelId())
@@ -163,7 +499,7 @@ public class SceneService {
     }
     
     private String buildSceneRecommendationUserPrompt(Novel novel, List<Scene> existingScenes, 
-                                                      List<Character> characters, List<WorldSetting> worldSettings,
+                                                      List<com.aiwriter.entity.Character> characters, List<WorldSetting> worldSettings,
                                                       List<Chapter> recentChapters, int count) {
         StringBuilder sb = new StringBuilder();
         
@@ -188,7 +524,7 @@ public class SceneService {
         
         if (!characters.isEmpty()) {
             sb.append("=== 已有角色 ===\n");
-            for (Character c : characters) {
+            for (com.aiwriter.entity.Character c : characters) {
                 sb.append("- ").append(c.getName()).append("\n");
             }
             sb.append("\n");

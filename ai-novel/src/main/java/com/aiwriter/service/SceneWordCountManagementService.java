@@ -66,7 +66,7 @@ public class SceneWordCountManagementService {
             
             SceneWordCountAnalysis analysis = new SceneWordCountAnalysis();
             analysis.setSceneId(sceneId);
-            analysis.setSceneName(sceneService.getScene(sceneId).getName());
+            analysis.setSceneName(sceneService.getScene(sceneId).getSceneName());
             analysis.setTotalWordCount(totalWordCount);
             analysis.setAverageWordCount(Math.round((double) totalWordCount / wordCounts.size()));
             analysis.setUsageCount((long) usages.size());
@@ -118,7 +118,7 @@ public class SceneWordCountManagementService {
             
             SceneWordCountTarget target = new SceneWordCountTarget();
             target.setSceneId(sceneId);
-            target.setSceneName(sceneService.getScene(sceneId).getName());
+            target.setSceneName(sceneService.getScene(sceneId).getSceneName());
             target.setMinWords(minWords);
             target.setMaxWords(maxWords);
             target.setTargetAverageWords((minWords + maxWords) / 2);
@@ -286,7 +286,7 @@ public class SceneWordCountManagementService {
     private SceneWordCountAnalysis buildEmptyAnalysis(Long sceneId) {
         SceneWordCountAnalysis analysis = new SceneWordCountAnalysis();
         analysis.setSceneId(sceneId);
-        analysis.setSceneName(sceneService.getScene(sceneId).getName());
+        analysis.setSceneName(sceneService.getScene(sceneId).getSceneName());
         analysis.setTotalWordCount(0L);
         analysis.setAverageWordCount(0L);
         analysis.setUsageCount(0L);

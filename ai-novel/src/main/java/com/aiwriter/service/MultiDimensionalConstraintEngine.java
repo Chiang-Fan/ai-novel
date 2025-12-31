@@ -195,6 +195,8 @@ public class MultiDimensionalConstraintEngine {
         private String characteristics;
         private String abilities;
         private String limitations;
+        private String culturalTraits;
+        private String interracialRelations;
     }
 
     /**
@@ -299,7 +301,8 @@ public class MultiDimensionalConstraintEngine {
                     RaceConstraint rc = new RaceConstraint();
                     rc.setRaceName(race.getName());
                     rc.setCharacteristics(race.getPhysicalCharacteristics());
-                    rc.setAbilityLimitations(race.getAbilities());
+                    rc.setAbilities(race.getAbilities());
+                    rc.setLimitations(race.getSocialStatus());  // 使用社会地位作为限制
                     rc.setCulturalTraits(race.getCulturalCustoms());
                     rc.setInterracialRelations(race.getRaceRelations());
                     return rc;
@@ -322,7 +325,7 @@ public class MultiDimensionalConstraintEngine {
                 .orElseThrow(() -> new RuntimeException("章节不存在"));
         
         // 获取章节中提到的主要场景
-        List<Scene> scenes = sceneRepository.findByNovelId(novelId);
+        List<Scene> scenes = sceneRepository.findByNovelIdOrderByImportanceScoreDesc(novelId);
         if (scenes.isEmpty()) {
             return constraints;
         }
@@ -352,15 +355,15 @@ public class MultiDimensionalConstraintEngine {
     private CharacterConstraints buildCharacterConstraints(Long novelId, Long chapterId) {
         CharacterConstraints constraints = new CharacterConstraints();
         
-        List<Character> characters = characterRepository.findByNovelId(novelId);
+        List<com.aiwriter.entity.Character> characters = characterRepository.findByNovelIdOrderByRoleTypeAsc(novelId);
         
         if (characters.isEmpty()) {
             return constraints;
         }
         
         // 设置主角
-        Character protagonist = characters.stream()
-                .filter(c -> "PROTAGONIST".equals(c.getRole()))
+        com.aiwriter.entity.Character protagonist = characters.stream()
+                .filter(c -> "PROTAGONIST".equals(c.getRoleType()))
                 .findFirst()
                 .orElse(characters.get(0));
         
@@ -369,7 +372,7 @@ public class MultiDimensionalConstraintEngine {
         pc.setName(protagonist.getName());
         pc.setPersonality(protagonist.getPersonality());
         pc.setAbilities(protagonist.getAbilities());
-        pc.setCurrentState(protagonist.getCurrentState());
+        pc.setCurrentState(protagonist.getBackground());  // 使用背景作为当前状态
         
         constraints.setProtagonist(pc);
         
@@ -381,7 +384,7 @@ public class MultiDimensionalConstraintEngine {
                     SupportingCharacter sc = new SupportingCharacter();
                     sc.setCharacterId(c.getId());
                     sc.setName(c.getName());
-                    sc.setRole(c.getRole());
+                    sc.setRole(c.getRoleType());
                     return sc;
                 })
                 .collect(Collectors.toList())
@@ -399,9 +402,12 @@ public class MultiDimensionalConstraintEngine {
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new RuntimeException("章节不存在"));
         
+        Novel novel = novelRepository.findById(chapter.getNovelId())
+                .orElseThrow(() -> new RuntimeException("小说不存在"));
+        
         // 从小说配置读取风格
-        constraints.setNovelStyle(chapter.getNovel().getWritingStyle() != null 
-            ? chapter.getNovel().getWritingStyle() 
+        constraints.setNovelStyle(novel.getWritingStyle() != null 
+            ? novel.getWritingStyle() 
             : "NEUTRAL");
         
         constraints.setParagraphStyle("DESCRIPTIVE");
@@ -421,10 +427,11 @@ public class MultiDimensionalConstraintEngine {
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new RuntimeException("章节不存在"));
         
+        Novel novel = novelRepository.findById(chapter.getNovelId())
+                .orElseThrow(() -> new RuntimeException("小说不存在"));
+        
         // 获取大纲信息
-        List<Outline> outlines = chapter.getNovel().getOutlines() != null 
-            ? chapter.getNovel().getOutlines() 
-            : new ArrayList<>();
+        List<Outline> outlines = outlineRepository.findByNovelIdOrderBySequenceNumberAsc(novelId);
         
         constraints.setOutlineKeyPoints(
             outlines.stream()

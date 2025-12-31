@@ -38,7 +38,7 @@ public class EnhancedContinuationController {
         try {
             EnhancedContinuationResponse response = 
                 enhancedContinuationService.generateEnhancedContinuation(request);
-            return ResponseEntity.ok(ApiResponse.success(response, "续写生成成功"));
+            return ResponseEntity.ok(ApiResponse.success("续写生成成功", response));
         } catch (Exception e) {
             log.error("生成续写失败", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

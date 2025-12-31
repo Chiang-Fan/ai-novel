@@ -30,7 +30,7 @@ public class WorldSettingAiService {
 
         try {
             String prompt = buildWorldSettingPrompt(novel);
-            String aiResponse = aiService.generateText(prompt);
+            String aiResponse = aiService.chat("你是一个专业的小说世界观设计师", prompt);
             return parseWorldSettingResponse(aiResponse);
         } catch (Exception e) {
             log.error("AI生成世界观建议失败", e);
@@ -169,7 +169,7 @@ public class WorldSettingAiService {
         );
 
         try {
-            String aiResponse = aiService.generateText(prompt);
+            String aiResponse = aiService.chat("你是一个专业的魔法系统设计师", prompt);
             return objectMapper.readValue(aiResponse, Map.class);
         } catch (Exception e) {
             log.error("生成魔法系统详情失败", e);

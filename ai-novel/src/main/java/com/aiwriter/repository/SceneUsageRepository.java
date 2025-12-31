@@ -11,9 +11,14 @@ import java.util.List;
 public interface SceneUsageRepository extends JpaRepository<SceneUsage, Long> {
     
     /**
-     * 查询场景的所有使用记录
+    * 查询场景的所有使用记录
      */
     List<SceneUsage> findBySceneIdOrderByUsageTimeDesc(Long sceneId);
+    
+    /**
+     * 查询场景的所有使用记录（按时间升序）
+     */
+    List<SceneUsage> findBySceneIdOrderByUsageTimeAsc(Long sceneId);
     
     /**
      * 查询章节使用的场景

@@ -40,7 +40,7 @@
             <div class="info-grid">
               <div class="info-item">
                 <span class="label">场景名称:</span>
-                <span class="value">{{ sceneDetail.name }}</span>
+                <span class="value">{{ sceneDetail.sceneName || sceneDetail.name }}</span>
               </div>
               <div class="info-item">
                 <span class="label">场景类型:</span>
@@ -48,14 +48,14 @@
               </div>
               <div class="info-item">
                 <span class="label">地点:</span>
-                <span class="value">{{ sceneDetail.location || '未设置' }}</span>
+                <span class="value">{{ sceneDetail.locationDesc || sceneDetail.location || '未设置' }}</span>
               </div>
               <div class="info-item">
                 <span class="label">重要性:</span>
                 <span class="value">
                   <div class="importance-stars">
                     <span v-for="i in 10" :key="i" 
-                      :class="['star', { active: i <= sceneDetail.importance }]">★</span>
+                      :class="['star', { active: i <= (sceneDetail.importanceScore || sceneDetail.importance || 0) }]">★</span>
                   </div>
                 </span>
               </div>
@@ -440,8 +440,9 @@ export default {
     const loadSceneDetail = async () => {
       try {
         const response = await axios.get(`/api/scenes/${sceneId.value}`)
+        // 兼容新的Response格式 (sceneName字段)
         sceneDetail.value = response.data.data
-        sceneName.value = sceneDetail.value.name
+        sceneName.value = sceneDetail.value.sceneName || sceneDetail.value.name
       } catch (error) {
         console.error('加载场景详情失败:', error)
         alert('加载场景详情失败')
@@ -472,7 +473,16 @@ export default {
     const loadStatistics = async () => {
       try {
         const response = await axios.get(`/api/scenes/${sceneId.value}/statistics`)
-        statistics.value = response.data.data || {}
+        const data = response.data.data || {}
+        // 兼容新的Response格式
+        statistics.value = {
+          usageCount: data.totalUsages || data.usageCount || 0,
+          changeCount: data.changeCount || 0,
+          firstChapter: data.firstUsedChapter || data.firstChapter || '',
+          lastChapter: data.lastUsedChapter || data.lastChapter || '',
+          timeOfDayDistribution: data.usageByTimeOfDay || data.timeOfDayDistribution || {},
+          weatherDistribution: data.usageByWeather || data.weatherDistribution || {}
+        }
         await nextTick()
         renderCharts()
       } catch (error) {

@@ -74,13 +74,13 @@ public class SceneRhythmAnalysisService {
             analysis.setSceneType(scene.getSceneType());
             analysis.setTotalAppearances((long) usages.size());
             analysis.setAverageInterval(intervals.isEmpty() ? 0 : 
-                Math.round((double) intervals.stream().mapToInt(Integer::intValue).sum() / intervals.size()));
+                (int) Math.round((double) intervals.stream().mapToInt(Integer::intValue).sum() / intervals.size()));
             analysis.setMinInterval(intervals.isEmpty() ? 0 : intervals.stream().mapToInt(Integer::intValue).min().orElse(0));
             analysis.setMaxInterval(intervals.isEmpty() ? 0 : intervals.stream().mapToInt(Integer::intValue).max().orElse(0));
             analysis.setRhythmPattern(rhythmPattern);
             analysis.setRhythmScore(Math.round(rhythmScore * 100.0) / 100.0);
             analysis.setAverageChapterLength(chapterWordCounts.isEmpty() ? 0 : 
-                Math.round((double) chapterWordCounts.stream().mapToInt(Integer::intValue).sum() / chapterWordCounts.size()));
+                (int) Math.round((double) chapterWordCounts.stream().mapToInt(Integer::intValue).sum() / chapterWordCounts.size()));
             analysis.setFirstAppearanceChapter(chapterRepository.findById(usages.get(0).getChapterId())
                 .map(Chapter::getChapterNumber).orElse(0));
             analysis.setLastAppearanceChapter(chapterRepository.findById(usages.get(usages.size() - 1).getChapterId())
@@ -220,12 +220,13 @@ public class SceneRhythmAnalysisService {
     
     private List<Integer> calculateIntervals(List<SceneUsage> usages) {
         List<Integer> intervals = new ArrayList<>();
+        // 计算连续使用之间的时间间隔（天数）
         for (int i = 1; i < usages.size(); i++) {
-            int diff = (int) ChronoUnit.CHAPTERS.between(
-                usages.get(i - 1).getUsageTime(),
-                usages.get(i).getUsageTime()
+            long daysDiff = java.time.temporal.ChronoUnit.DAYS.between(
+                usages.get(i - 1).getUsageTime().toLocalDate(),
+                usages.get(i).getUsageTime().toLocalDate()
             );
-            if (diff > 0) intervals.add(diff);
+            if (daysDiff > 0) intervals.add((int) daysDiff);
         }
         return intervals;
     }
