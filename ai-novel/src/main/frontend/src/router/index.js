@@ -20,7 +20,14 @@ import EditHistory from '../views/EditHistory.vue'
 import WritingStyleManager from '../views/WritingStyleManager.vue'
 import PlotHookManager from '../views/PlotHookManager.vue'
 import ChapterAnalysisViewer from '../views/ChapterAnalysisViewer.vue'
+import WorldSettingManager from '../views/WorldSettingManager.vue'
+import TextImportManager from '../views/TextImportManager.vue'
+import MigrationManager from '../views/MigrationManager.vue'
 import Login from '../views/Login.vue'
+import OptimizationManager from '../views/OptimizationManager.vue'
+import PaceControlPanel from '../views/PaceControlPanel.vue'
+import PlotSimulationPanel from '../views/PlotSimulationPanel.vue'
+import SuggestionManager from '../views/SuggestionManager.vue'
 
 const routes = [
   {
@@ -138,16 +145,52 @@ const routes = [
     meta: { title: '场景动态管理' }
   },
   {
-    path: '/novel/:novelId/relationships',
-    name: 'RelationshipGraphPanel',
-    component: RelationshipGraphPanel,
-    meta: { title: '角色关系图谱' }
-  },
-  {
     path: '/scene/:sceneId/atmosphere',
     name: 'AtmosphereGenerationPanel',
     component: AtmosphereGenerationPanel,
     meta: { title: '场景氛围生成' }
+  },
+  {
+    path: '/novel/:id/world-settings',
+    name: 'WorldSettingManager',
+    component: WorldSettingManager,
+    meta: { title: '世界设定管理' }
+  },
+  {
+    path: '/novel/:id/text-import',
+    name: 'TextImportManager',
+    component: TextImportManager,
+    meta: { title: '文本导入管理' }
+  },
+  {
+    path: '/migration',
+    name: 'MigrationManager',
+    component: MigrationManager,
+    meta: { title: '风格迁移管理' }
+  },
+  {
+    path: '/novel/:id/optimization',
+    name: 'OptimizationManager',
+    component: OptimizationManager,
+    meta: { title: '优化管理' }
+  },
+  {
+    path: '/novel/:id/pace-control',
+    name: 'PaceControlPanel',
+    component: PaceControlPanel,
+    meta: { title: '节奏控制' }
+  },
+  {
+    path: '/novel/:id/plot-simulation',
+    name: 'PlotSimulationPanel',
+    component: PlotSimulationPanel,
+    meta: { title: '情节模拟' }
+  },
+  {
+    path: '/novel/:id/suggestions',
+    name: 'SuggestionManager',
+    component: SuggestionManager,
+    meta: { title: '建议管理' }
   }
 ]
 

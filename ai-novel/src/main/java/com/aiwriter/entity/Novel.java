@@ -78,6 +78,28 @@ public class Novel extends BaseEntity {
     @Column(name = "use_ai_recommendation")
     private Boolean useAiRecommendation = true;
     
+    /**
+     * 核心主题（JSON数组）
+     * 示例：["identity", "sacrifice", "redemption"]
+     * Qwen-Project.md 新增字段
+     */
+    @Column(name = "core_themes", columnDefinition = "TEXT")
+    private String coreThemes;
+    
+    /**
+     * 循环意象（JSON数组）
+     * 示例：["clock", "rain", "mirror"]
+     * Qwen-Project.md 新增字段
+     */
+    @Column(name = "recurring_motifs", columnDefinition = "TEXT")
+    private String recurringMotifs;
+    
+    /**
+     * 小说大纲（整体剧情规划）
+     */
+    @Column(columnDefinition = "TEXT")
+    private String outline;
+    
     // Getters and Setters
     
     public Long getInitialOutlineId() {
@@ -165,5 +187,29 @@ public class Novel extends BaseEntity {
     
     public void setTotalWords(Integer totalWords) {
         this.totalWords = totalWords;
+    }
+    
+    public String getCoreThemes() {
+        return coreThemes;
+    }
+    
+    public void setCoreThemes(String coreThemes) {
+        this.coreThemes = coreThemes;
+    }
+    
+    public String getRecurringMotifs() {
+        return recurringMotifs;
+    }
+    
+    public void setRecurringMotifs(String recurringMotifs) {
+        this.recurringMotifs = recurringMotifs;
+    }
+    
+    public String getOutline() {
+        return outline;
+    }
+    
+    public void setOutline(String outline) {
+        this.outline = outline;
     }
 }

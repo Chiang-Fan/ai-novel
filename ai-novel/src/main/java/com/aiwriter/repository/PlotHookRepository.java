@@ -57,4 +57,11 @@ public interface PlotHookRepository extends JpaRepository<PlotHook, Long> {
      */
     @Query("SELECT h FROM PlotHook h WHERE h.novelId = :novelId AND h.status IN ('PENDING', 'HINTED') AND h.expectedChapter IS NOT NULL AND h.expectedChapter < :currentChapter ORDER BY h.expectedChapter ASC")
     List<PlotHook> findOverdueHooks(@Param("novelId") Long novelId, @Param("currentChapter") Integer currentChapter);
+    
+    /**
+     * 查询指定章节范围内待展开的伏笔（Qwen-Project.md 伏笔时间窗）
+     * 返回 minChapter <= chapterNumber <= maxChapter 的所有待触发伏笔
+     */
+    @Query("SELECT h FROM PlotHook h WHERE h.novelId = :novelId AND h.status IN ('PENDING', 'HINTED') AND h.minChapter <= :chapterNumber AND h.maxChapter >= :chapterNumber ORDER BY h.priority DESC, h.minChapter ASC")
+    List<PlotHook> findPendingHooksForChapter(@Param("novelId") Long novelId, @Param("chapterNumber") Integer chapterNumber);
 }

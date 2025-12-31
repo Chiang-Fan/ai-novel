@@ -38,7 +38,8 @@ public class ChapterService {
     private final CharacterService characterService;
     private final SceneService sceneService;
     private final ObjectMapper objectMapper;
-    private final AutoExtractionService autoExtractionService;  // 新增
+    private final AutoExtractionService autoExtractionService;
+    private final PromptBuilderService promptBuilderService;  // 新增：Qwen-Project.md动态Prompt构建
     
     /**
      * 创建章节
@@ -98,24 +99,38 @@ public class ChapterService {
         // 获取增强上下文信息（角色、场景、最新分析）
         String enhancedContext = buildEnhancedContext(request.getNovelId(), request.getSceneId(), context);
         
-        // 构建提示词
-        String systemPrompt = PromptTemplates.CHAPTER_CONTINUE_SYSTEM;
-        String userPrompt = promptTemplates.buildChapterContinuePrompt(
-            enhancedContext,
-            request.getDirection(),
-            request.getTargetWordCount()
-        );
+        // 🔥 使用PromptBuilderService动态构建Prompt（Qwen-Project.md核心功能）
+        // 如果小说有风格画像，使用完整Prompt；否则降级到简单模式
+        Integer nextChapterNumber = chapterRepository
+            .findMaxChapterNumber(request.getNovelId())
+            .orElse(0) + 1;
         
-        log.info("开始AI续写: novelId={}, targetWords={}", request.getNovelId(), request.getTargetWordCount());
+        String fullPrompt;
+        try {
+            fullPrompt = promptBuilderService.buildFullPrompt(
+                request.getNovelId(),
+                nextChapterNumber
+            );
+            log.info("使用四维风格画像动态构建Prompt");
+        } catch (Exception e) {
+            log.warn("风格画像构建失败，降级到简单模式: {}", e.getMessage());
+            fullPrompt = promptBuilderService.buildSimplePrompt(
+                request.getNovelId(),
+                nextChapterNumber,
+                request.getDirection(),
+                request.getTargetWordCount()
+            );
+        }
+        
+        String systemPrompt = PromptTemplates.CHAPTER_CONTINUE_SYSTEM;
+        String userPrompt = fullPrompt; // 使用动态构建的Prompt
+        
+        log.info("开始AI续写: novelId={}, chapterNumber={}, targetWords={}", 
+            request.getNovelId(), nextChapterNumber, request.getTargetWordCount());
         
         // 调用AI生成
         String generatedContent = aiService.chat(systemPrompt, userPrompt);
         String cleanedContent = aiService.extractContent(generatedContent);
-        
-        // 创建章节
-        Integer nextChapterNumber = chapterRepository
-            .findMaxChapterNumber(request.getNovelId())
-            .orElse(0) + 1;
         
         Chapter chapter = new Chapter();
         chapter.setNovelId(request.getNovelId());

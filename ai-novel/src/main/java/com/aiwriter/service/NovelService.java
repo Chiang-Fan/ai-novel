@@ -32,19 +32,23 @@ public class NovelService {
     
     /**
      * 创建小说 - 强化版
-     * 要求：大纲和初始场景必填
+     * 要求：大纲和初始场景可选
      */
     @Transactional
     public Novel createNovel(NovelCreateRequest request) {
-        // 验证大纲存在
-        Outline outline = outlineRepository.findById(request.getInitialOutlineId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "大纲不存在: " + request.getInitialOutlineId()));
+        // 如果提供了初始大纲ID，则验证其存在
+        if (request.getInitialOutlineId() != null) {
+            Outline outline = outlineRepository.findById(request.getInitialOutlineId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "大纲不存在: " + request.getInitialOutlineId()));
+        }
         
-        // 验证场景存在
-        Scene scene = sceneRepository.findById(request.getInitialSceneId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "场景不存在: " + request.getInitialSceneId()));
+        // 如果提供了初始场景ID，则验证其存在
+        if (request.getInitialSceneId() != null) {
+            Scene scene = sceneRepository.findById(request.getInitialSceneId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "场景不存在: " + request.getInitialSceneId()));
+        }
         
         // 创建小说实体
         Novel novel = new Novel();

@@ -30,15 +30,13 @@ public class NovelCreateRequest {
     private String writingStyle;
     
     /**
-     * 初始大纲ID - 必填
+     * 初始大纲ID - 可选
      */
-    @jakarta.validation.constraints.NotNull(message = "初始大纲不能为空")
     private Long initialOutlineId;
     
     /**
-     * 初始场景ID - 必填
+     * 初始场景ID - 可选
      */
-    @jakarta.validation.constraints.NotNull(message = "初始场景不能为空")
     private Long initialSceneId;
     
     /**
@@ -46,4 +44,3 @@ public class NovelCreateRequest {
      */
     private Boolean useAiRecommendation = true;
 }
-

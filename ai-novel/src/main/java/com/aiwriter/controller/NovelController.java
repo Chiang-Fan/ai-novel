@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * 小说管理Controller - 强化版
- * 支持大纲/场景必填和AI推荐
+ * 支持大纲/场景可选和AI推荐
  */
 @Tag(name = "小说管理", description = "小说的创建、查询、更新、删除")
 @RestController

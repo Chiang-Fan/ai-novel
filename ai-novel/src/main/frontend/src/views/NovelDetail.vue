@@ -108,6 +108,42 @@
               <div class="font-semibold text-gray-800 group-hover:text-gray-600">编辑历史</div>
               <div class="text-xs text-gray-500 mt-1">查看修改记录</div>
             </router-link>
+
+            <!-- 优化管理 (新增) -->
+            <router-link
+              :to="`/novel/${novel.id}/optimization`"
+              class="p-4 bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-lg hover:shadow-lg transition group">
+              <div class="text-3xl mb-2">✨</div>
+              <div class="font-semibold text-gray-800 group-hover:text-orange-600">优化管理</div>
+              <div class="text-xs text-gray-500 mt-1">内容优化建议</div>
+            </router-link>
+
+            <!-- 节奏控制 (新增) -->
+            <router-link
+              :to="`/novel/${novel.id}/pace-control`"
+              class="p-4 bg-gradient-to-br from-teal-50 to-teal-100 border-2 border-teal-200 rounded-lg hover:shadow-lg transition group">
+              <div class="text-3xl mb-2">⏱️</div>
+              <div class="font-semibold text-gray-800 group-hover:text-teal-600">节奏控制</div>
+              <div class="text-xs text-gray-500 mt-1">节奏分析优化</div>
+            </router-link>
+
+            <!-- 情节模拟 (新增) -->
+            <router-link
+              :to="`/novel/${novel.id}/plot-simulation`"
+              class="p-4 bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-lg hover:shadow-lg transition group">
+              <div class="text-3xl mb-2">🔮</div>
+              <div class="font-semibold text-gray-800 group-hover:text-red-600">情节模拟</div>
+              <div class="text-xs text-gray-500 mt-1">情节发展预测</div>
+            </router-link>
+
+            <!-- 建议管理 (新增) -->
+            <router-link
+              :to="`/novel/${novel.id}/suggestions`"
+              class="p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-200 rounded-lg hover:shadow-lg transition group">
+              <div class="text-3xl mb-2">💡</div>
+              <div class="font-semibold text-gray-800 group-hover:text-indigo-600">建议管理</div>
+              <div class="text-xs text-gray-500 mt-1">智能创作建议</div>
+            </router-link>
           </div>
         </div>
       </div>

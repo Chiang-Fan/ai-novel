@@ -64,6 +64,34 @@ public class Character {
     @Column(columnDefinition = "TEXT")
     private String notes; // 备注
     
+    /**
+     * 角色弧光当前阶段（Qwen-Project.md 新增）
+     * 取值：initial（初始）, conflict（冲突）, transformation（转变）, resolution（解决）
+     */
+    @Column(name = "current_arc_stage", length = 20)
+    private String currentArcStage = "initial";
+    
+    /**
+     * 核心信念（Qwen-Project.md 新增）
+     * 示例："强者才能生存"
+     */
+    @Column(name = "core_belief", columnDefinition = "TEXT")
+    private String coreBelief;
+    
+    /**
+     * 演变中的信念（Qwen-Project.md 新增）
+     * 示例："弱小者也有存在的意义"
+     */
+    @Column(name = "evolving_belief", columnDefinition = "TEXT")
+    private String evolvingBelief;
+    
+    /**
+     * 最后更新的章节号（Qwen-Project.md 新增）
+     * 用于追踪角色最近出现的章节
+     */
+    @Column(name = "last_updated_chapter")
+    private Integer lastUpdatedChapter;
+    
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     

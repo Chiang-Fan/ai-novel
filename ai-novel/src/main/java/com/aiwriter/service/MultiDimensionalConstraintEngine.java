@@ -28,6 +28,8 @@ public class MultiDimensionalConstraintEngine {
     private final WorldSettingValidationService validationService;
     private final GeographySettingRepository geographySettingRepository;
     private final RaceSettingRepository raceSettingRepository;
+    private final NovelRepository novelRepository;
+    private final OutlineRepository outlineRepository;
 
     /**
      * 综合约束信息
@@ -79,8 +81,20 @@ public class MultiDimensionalConstraintEngine {
         // 魔法规则
         private String magicSystemRules;
         
+        // 禁忌元素
+        private List<String> tabooElements;
+        
         // 约束强度
         private Integer constraintStrength;
+        
+        // Getter/Setter for tabooElements
+        public List<String> getTabooElements() {
+            return tabooElements != null ? tabooElements : new ArrayList<>();
+        }
+        
+        public void setTabooElements(List<String> tabooElements) {
+            this.tabooElements = tabooElements;
+        }
     }
 
     /**

@@ -2,8 +2,7 @@ package com.aiwriter.service;
 
 import com.aiwriter.entity.ImportedChapter;
 import com.aiwriter.entity.TextImport;
-import com.aiwriter.repository.ImportedChapterRepository;
-import com.aiwriter.repository.TextImportRepository;
+import com.aiwriter.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +25,10 @@ public class TextImportService {
 
     private final TextImportRepository textImportRepository;
     private final ImportedChapterRepository importedChapterRepository;
+    private final NovelWritingStyleService writingStyleService;
+    private final ChapterRepository chapterRepository;
+    private final CharacterRepository characterRepository;
+    private final PlotHookRepository plotHookRepository;
 
     /**
      * 上传并解析文本文件
@@ -251,7 +254,8 @@ public class TextImportService {
     }
 
     /**
-     * 确认导入
+     * 确认导入（Qwen-Project.md 增强版）
+     * 将导入的章节转换为正式章节，并触发AI深度分析
      */
     @Transactional
     public void confirmImport(Long textImportId) {
@@ -260,7 +264,62 @@ public class TextImportService {
 
         textImport.setConfirmed(true);
         textImportRepository.save(textImport);
+        
+        // 将导入章节转换为正式章节
+        convertImportedChaptersToFormal(textImport);
+        
+        // 触发AI深度分析（异步）
+        performDeepAnalysis(textImport.getNovelId());
+        
         log.info("导入已确认: {}", textImportId);
+    }
+    
+    /**
+     * 将导入章节转换为正式章节
+     */
+    private void convertImportedChaptersToFormal(TextImport textImport) {
+        List<ImportedChapter> importedChapters = importedChapterRepository
+                .findByTextImportIdOrderByChapterNumber(textImport.getId());
+        
+        for (ImportedChapter imported : importedChapters) {
+            com.aiwriter.entity.Chapter chapter = new com.aiwriter.entity.Chapter();
+            chapter.setNovelId(imported.getNovelId());
+            chapter.setChapterNumber(imported.getChapterNumber());
+            chapter.setTitle(imported.getTitle());
+            chapter.setContent(imported.getContent());
+            chapter.setWordCount(imported.getWordCount());
+            chapter.setStatus("published");
+            chapter.setIsAiGenerated(false); // 标记为导入内容
+            
+            chapterRepository.save(chapter);
+        }
+        
+        log.info("已转换 {} 个章节为正式章节", importedChapters.size());
+    }
+    
+    /**
+     * 执行深度AI分析（Qwen-Project.md 核心功能）
+     * 1. 批量分析章节提取四维风格画像
+     * 2. 提取角色弧光和核心信念
+     * 3. 识别伏笔和循环意象
+     */
+    private void performDeepAnalysis(Long novelId) {
+        log.info("开始深度AI分析: novelId={}", novelId);
+        
+        try {
+            // 1. 分析写作风格（调用NovelWritingStyleService）
+            writingStyleService.analyzeBatchChapters(novelId);
+            
+            // 2. TODO: 提取角色弧光（后续实现）
+            // characterArcService.extractCharacterArcs(novelId);
+            
+            // 3. TODO: 检测伏笔（后续实现）
+            // plotHookDetectionService.detectPlotHooks(novelId);
+            
+            log.info("深度AI分析完成: novelId={}", novelId);
+        } catch (Exception e) {
+            log.error("深度AI分析失败: novelId={}", novelId, e);
+        }
     }
 
     /**

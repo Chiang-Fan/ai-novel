@@ -82,6 +82,26 @@ public class Chapter extends BaseEntity {
     @Column(name = "is_ai_generated")
     private Boolean isAiGenerated = false;
     
+    /**
+     * 场景类型（Qwen-Project.md 新增）
+     * 取值：setup（铺垫）, conflict（冲突）, turning_point（转折点）, reflection（反思）
+     */
+    @Column(name = "scene_type", length = 20)
+    private String sceneType;
+    
+    /**
+     * 是否高重要场景（Qwen-Project.md 新增）
+     * 用于节奏控制，高重要场景不宜连续出现过多
+     */
+    @Column(name = "is_high_stakes")
+    private Boolean isHighStakes = false;
+    
+    /**
+     * 章节状态
+     */
+    @Column(name = "status", length = 20)
+    private String status;
+    
     // Getters and Setters
     public Long getNovelId() {
         return novelId;
@@ -169,5 +189,29 @@ public class Chapter extends BaseEntity {
     
     public void setIsAiGenerated(Boolean isAiGenerated) {
         this.isAiGenerated = isAiGenerated;
+    }
+    
+    public String getSceneType() {
+        return sceneType;
+    }
+    
+    public void setSceneType(String sceneType) {
+        this.sceneType = sceneType;
+    }
+    
+    public Boolean getIsHighStakes() {
+        return isHighStakes;
+    }
+    
+    public void setIsHighStakes(Boolean isHighStakes) {
+        this.isHighStakes = isHighStakes;
+    }
+    
+    public String getStatus() {
+        return status;
+    }
+    
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

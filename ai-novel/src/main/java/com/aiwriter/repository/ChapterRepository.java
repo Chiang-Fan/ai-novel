@@ -61,4 +61,17 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
      * 查询AI生成的章节
      */
     List<Chapter> findByNovelIdAndIsAiGenerated(Long novelId, Boolean isAiGenerated);
+    
+    /**
+     * 查询最新章节（Qwen-Project.md 新增）
+     */
+    @Query("SELECT c FROM Chapter c WHERE c.novelId = ?1 ORDER BY c.chapterNumber DESC LIMIT 1")
+    Optional<Chapter> findTopByNovelIdOrderByChapterNumberDesc(Long novelId);
+    
+    /**
+     * 统计从某章节开始的高重要场景数量（Qwen-Project.md 新增）
+     * 用于节奏控制，避免高潮场景连续出现过多
+     */
+    @Query("SELECT COUNT(c) FROM Chapter c WHERE c.novelId = ?1 AND c.chapterNumber >= ?2 AND c.isHighStakes = true")
+    int countHighStakesChapters(Long novelId, Integer fromChapter);
 }

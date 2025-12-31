@@ -7,12 +7,12 @@ spring:
     openai:
       api-key: ${SPRING_AI_OPENAI_API_KEY:sk-dummy-key}
 
-  # 数据源配置（使用H2内存数据库）
+  # 数据源配置（使用MySQL数据库）
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:./data/novels;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ai_novel_writer?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: mm920912
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -20,17 +20,9 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
 
-  # H2控制台配置（开发时可用）
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: false
-
   # JPA配置
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: update
       naming:
@@ -44,6 +36,10 @@ spring:
           batch_size: 20
         order_inserts: true
         order_updates: true
+
+  # Flyway配置
+  flyway:
+    enabled: false
 
   # Jackson配置
   jackson:
@@ -71,7 +67,7 @@ spring:
 
 # 服务器配置
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8083}
   servlet:
     context-path: /
     encoding:
@@ -83,11 +79,9 @@ server:
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
 
 # AI配置 (通义千问)
-# 注意: api-key应在application-local.yml中配置（不提交到Git）
-# 或通过环境变量DASHSCOPE_API_KEY传递
 ai:
   qianwen:
-    api-key: ${DASHSCOPE_API_KEY:}  # 默认为空，必须配置
+    api-key: sk-9ab34ce77e954f93bf7f2bd95ac43894
     model: ${AI_MODEL:qwen-plus}
     temperature: 0.7
     max-tokens: 4000

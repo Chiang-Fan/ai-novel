@@ -78,6 +78,20 @@ public class PlotHook extends BaseEntity {
     private Integer expectedChapter;
     
     /**
+     * 最早展开章节号（Qwen-Project.md 伏笔时间窗）
+     * 与maxChapter配合定义伏笔的展开窗口期
+     */
+    @Column(name = "min_chapter")
+    private Integer minChapter;
+    
+    /**
+     * 最晚展开章节号（Qwen-Project.md 伏笔时间窗）
+     * 超过此章节未展开则视为超期
+     */
+    @Column(name = "max_chapter")
+    private Integer maxChapter;
+    
+    /**
      * 实际触发章节号
      */
     @Column(name = "triggered_in_chapter")
