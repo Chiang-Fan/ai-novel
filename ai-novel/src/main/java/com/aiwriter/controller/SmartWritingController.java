@@ -24,6 +24,9 @@ public class SmartWritingController {
     @Autowired
     private ContinuationSuggestionService suggestionService;
     
+    @Autowired
+    private com.aiwriter.service.WritingStatusService writingStatusService;
+    
     // ==================== 内容分析API ====================
     
     /**
@@ -126,6 +129,17 @@ public class SmartWritingController {
         return ApiResponse.success("已标记为采用");
     }
     
+    /**
+     * 基于当前上下文生成新的智能建议
+     * POST /api/smart-writing/suggestions/contextual
+     */
+    @PostMapping("/suggestions/contextual")
+    public ApiResponse<List<ContinuationSuggestionResponse>> getContextualSuggestions(
+            @Valid @RequestBody ContextualSuggestionRequest request) {
+        List<ContinuationSuggestionResponse> result = suggestionService.getContextualSuggestions(request);
+        return ApiResponse.success("基于当前上下文的建议生成成功", result);
+    }
+    
     // ==================== 组合API ====================
     
     /**
@@ -159,6 +173,17 @@ public class SmartWritingController {
         result.setSuggestions(suggestions);
         
         return ApiResponse.success("分析和建议生成完成", result);
+    }
+    
+    /**
+     * 获取当前写作状态
+     * GET /api/smart-writing/status/{novelId}
+     */
+    @GetMapping("/status/{novelId}")
+    public ApiResponse<WritingStatusInfo> getWritingStatus(
+            @PathVariable Long novelId) {
+        WritingStatusInfo result = writingStatusService.getWritingStatus(novelId);
+        return ApiResponse.success("获取写作状态成功", result);
     }
     
     /**

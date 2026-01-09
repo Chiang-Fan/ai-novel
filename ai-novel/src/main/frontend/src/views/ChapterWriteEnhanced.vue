@@ -133,12 +133,39 @@
                 📊 当前写作状态
               </h4>
               
-              <!-- 角色信息 -->
-              <div v-if="contextInfo.characters && contextInfo.characters.length > 0" class="mb-3">
-                <div class="text-sm font-medium text-gray-700 mb-2">👥 活跃角色</div>
+              <!-- 写作风格信息 -->
+              <div v-if="contextInfo.writingStyle" class="mb-3">
+                <div class="text-sm font-medium text-gray-700 mb-2">✍️ 写作风格</div>
+                <div class="p-3 bg-white border border-purple-200 rounded-lg grid grid-cols-2 gap-2">
+                  <div v-if="contextInfo.writingStyle.perspective" class="text-sm">
+                    <span class="font-medium text-gray-700">视角:</span>
+                    <span class="text-gray-800 ml-1">{{ contextInfo.writingStyle.perspective }}</span>
+                  </div>
+                  <div v-if="contextInfo.writingStyle.tone" class="text-sm">
+                    <span class="font-medium text-gray-700">语气:</span>
+                    <span class="text-gray-800 ml-1">{{ contextInfo.writingStyle.tone }}</span>
+                  </div>
+                  <div v-if="contextInfo.writingStyle.sentenceStyle" class="text-sm">
+                    <span class="font-medium text-gray-700">句式:</span>
+                    <span class="text-gray-800 ml-1">{{ contextInfo.writingStyle.sentenceStyle }}</span>
+                  </div>
+                  <div v-if="contextInfo.writingStyle.avgSentenceLength" class="text-sm">
+                    <span class="font-medium text-gray-700">句长:</span>
+                    <span class="text-gray-800 ml-1">{{ contextInfo.writingStyle.avgSentenceLength }}字</span>
+                  </div>
+                  <div v-if="contextInfo.writingStyle.description" class="text-sm col-span-2">
+                    <span class="font-medium text-gray-700">描述:</span>
+                    <span class="text-gray-800 ml-1">{{ contextInfo.writingStyle.description }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 核心角色信息 -->
+              <div v-if="contextInfo.coreCharacters && contextInfo.coreCharacters.length > 0" class="mb-3">
+                <div class="text-sm font-medium text-gray-700 mb-2">🌟 核心角色</div>
                 <div class="flex flex-wrap gap-2">
                   <span 
-                    v-for="char in contextInfo.characters" 
+                    v-for="char in contextInfo.coreCharacters.slice(0, 5)" 
                     :key="char.id"
                     class="px-3 py-1 bg-white border border-purple-200 rounded-full text-sm"
                     :title="char.personality || char.background">
@@ -150,7 +177,68 @@
                 </div>
               </div>
               
-              <!-- 场景信息 -->
+              <!-- 近期角色信息 -->
+              <div v-if="contextInfo.recentCharacters && contextInfo.recentCharacters.length > 0" class="mb-3">
+                <div class="text-sm font-medium text-gray-700 mb-2">🎭 近期角色</div>
+                <div class="flex flex-wrap gap-2">
+                  <span 
+                    v-for="char in contextInfo.recentCharacters.slice(0, 8)" 
+                    :key="char.id"
+                    class="px-2 py-1 bg-gray-100 border border-gray-300 rounded-full text-xs"
+                    :title="char.personality || char.background">
+                    {{ char.name }}
+                    <span v-if="char.roleType" class="text-xs text-gray-500">
+                      ({{ getRoleTypeLabel(char.roleType) }})
+                    </span>
+                  </span>
+                </div>
+              </div>
+              
+              <!-- 当前进度信息 -->
+              <div v-if="contextInfo.progress" class="mb-3">
+                <div class="text-sm font-medium text-gray-700 mb-2">📈 当前进度</div>
+                <div class="p-3 bg-white border border-purple-200 rounded-lg">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="text-sm">
+                      <span class="font-medium text-gray-700">章节:</span>
+                      <span class="text-gray-800 ml-1">{{ contextInfo.progress.currentChapter }} / {{ contextInfo.progress.totalChapters }}</span>
+                    </div>
+                    <div class="text-sm">
+                      <span class="font-medium text-gray-700">字数:</span>
+                      <span class="text-gray-800 ml-1">{{ contextInfo.progress.currentWordCount }} / {{ contextInfo.progress.targetWordCount }}</span>
+                    </div>
+                    <div class="text-sm">
+                      <span class="font-medium text-gray-700">进度:</span>
+                      <span class="text-gray-800 ml-1">{{ (contextInfo.progress.progressPercentage || 0).toFixed(1) }}%</span>
+                    </div>
+                    <div class="text-sm">
+                      <span class="font-medium text-gray-700">状态:</span>
+                      <span class="text-gray-800 ml-1">{{ contextInfo.progress.status }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 建议续写方向 -->
+              <div v-if="contextInfo.continuationSuggestions && contextInfo.continuationSuggestions.length > 0" class="mb-3">
+                <div class="text-sm font-medium text-gray-700 mb-2">
+                  🎯 建议续写方向 ({{ contextInfo.continuationSuggestions.length }}条)
+                </div>
+                <div class="space-y-2 max-h-40 overflow-y-auto">
+                  <div 
+                    v-for="sugg in contextInfo.continuationSuggestions.slice(0, 3)" 
+                    :key="sugg.id"
+                    class="p-2 bg-white border border-purple-200 rounded text-sm">
+                    <div class="font-medium text-gray-800 flex justify-between">
+                      <span>{{ sugg.title }}</span>
+                      <span class="text-xs text-blue-600">优先级: {{ sugg.priority }}</span>
+                    </div>
+                    <div class="text-gray-600 text-xs mt-1">{{ sugg.description }}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 当前场景信息 -->
               <div v-if="contextInfo.currentScene" class="mb-3">
                 <div class="text-sm font-medium text-gray-700 mb-2">🎬 当前场景</div>
                 <div class="p-3 bg-white border border-purple-200 rounded-lg">
@@ -158,8 +246,11 @@
                   <div v-if="contextInfo.currentScene.location" class="text-sm text-gray-600 mt-1">
                     📍 {{ contextInfo.currentScene.location }}
                   </div>
-                  <div v-if="contextInfo.currentScene.timePeriod" class="text-sm text-gray-600 mt-1">
-                    🕐 {{ contextInfo.currentScene.timePeriod }}
+                  <div v-if="contextInfo.currentScene.sceneType" class="text-sm text-gray-600 mt-1">
+                    🏗️ 类型: {{ contextInfo.currentScene.sceneType }}
+                  </div>
+                  <div v-if="contextInfo.currentScene.description" class="text-sm text-gray-600 mt-1">
+                    📝 {{ contextInfo.currentScene.description }}
                   </div>
                   <div v-if="contextInfo.currentScene.atmosphere" class="text-sm text-gray-600 mt-1">
                     🎭 {{ contextInfo.currentScene.atmosphere }}
@@ -167,57 +258,25 @@
                 </div>
               </div>
               
-              <!-- 最新分析信息 -->
-              <div v-if="contextInfo.latestAnalysis" class="mb-3">
-                <div class="text-sm font-medium text-gray-700 mb-2">🔍 内容分析</div>
-                <div class="p-3 bg-white border border-purple-200 rounded-lg space-y-2">
-                  <!-- 整体主角 -->
-                  <div v-if="contextInfo.latestAnalysis.protagonistName" class="text-sm">
-                    <span class="font-medium text-gray-700">📚 整体主角：</span>
-                    <span class="text-purple-800 font-semibold">{{ contextInfo.latestAnalysis.protagonistName }}</span>
-                  </div>
-                  <!-- 章节视角角色 -->
-                  <div v-if="contextInfo.latestAnalysis.viewpointCharacter" class="text-sm">
-                    <span class="font-medium text-gray-700">👁️ 当前视角：</span>
-                    <span class="text-blue-800 font-semibold">{{ contextInfo.latestAnalysis.viewpointCharacter }}</span>
-                    <span v-if="contextInfo.latestAnalysis.isGlobalProtagonistPov === false" 
-                          class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
-                      临时主角
-                    </span>
-                  </div>
-                  <!-- 叙述视角 -->
-                  <div v-if="contextInfo.latestAnalysis.narrativePerspective" class="text-sm">
-                    <span class="font-medium text-gray-700">📖 叙述视角：</span>
-                    <span class="text-gray-800">{{ contextInfo.latestAnalysis.narrativePerspective }}</span>
-                  </div>
-                  <div v-if="contextInfo.latestAnalysis.currentConflict" class="text-sm">
-                    <span class="font-medium text-gray-700">⚔️ 当前冲突：</span>
-                    <span class="text-gray-800">{{ contextInfo.latestAnalysis.currentConflict }}</span>
-                  </div>
-                  <div v-if="contextInfo.latestAnalysis.emotionalTone" class="text-sm">
-                    <span class="font-medium text-gray-700">💭 情感基调：</span>
-                    <span class="text-gray-800">{{ contextInfo.latestAnalysis.emotionalTone }}</span>
-                  </div>
-                  <div v-if="contextInfo.latestAnalysis.styleInfo" class="text-sm">
-                    <span class="font-medium text-gray-700">写作风格：</span>
-                    <span class="text-gray-800">{{ contextInfo.latestAnalysis.styleInfo.style }}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- 续写建议 -->
-              <div v-if="contextInfo.unadoptedSuggestions && contextInfo.unadoptedSuggestions.length > 0" class="mb-2">
-                <div class="text-sm font-medium text-gray-700 mb-2">
-                  💡 未采用的续写建议 ({{ contextInfo.unadoptedSuggestions.length }}条)
-                </div>
+              <!-- 情节线索信息 -->
+              <div v-if="contextInfo.plotThreads && contextInfo.plotThreads.length > 0" class="mb-3">
+                <div class="text-sm font-medium text-gray-700 mb-2">🔗 情节线索 ({{ contextInfo.plotThreads.length }}条)</div>
                 <div class="space-y-2 max-h-40 overflow-y-auto">
                   <div 
-                    v-for="sugg in contextInfo.unadoptedSuggestions.slice(0, 3)" 
-                    :key="sugg.id"
-                    class="p-2 bg-white border border-purple-200 rounded text-sm cursor-pointer hover:border-purple-400"
-                    @click="applySuggestion(sugg)">
-                    <div class="font-medium text-gray-800">{{ sugg.title }}</div>
-                    <div class="text-gray-600 text-xs mt-1">{{ sugg.description }}</div>
+                    v-for="thread in contextInfo.plotThreads.slice(0, 3)" 
+                    :key="thread.id"
+                    class="p-2 bg-white border border-purple-200 rounded text-sm">
+                    <div class="font-medium text-gray-800 flex justify-between">
+                      <span>{{ thread.name }}</span>
+                      <span class="text-xs" :class="{
+                        'text-green-600': thread.status === 'RESOLVED',
+                        'text-yellow-600': thread.status === 'ACTIVE',
+                        'text-blue-600': thread.status === 'MAIN'
+                      }">
+                        {{ thread.status }}
+                      </span>
+                    </div>
+                    <div class="text-gray-600 text-xs mt-1">{{ thread.description }}</div>
                   </div>
                 </div>
               </div>
@@ -664,17 +723,22 @@ const createNewChapter = () => {
 const loadSuggestions = async () => {
   loadingSuggestions.value = true
   try {
-    // 获取未采用的建议
-    suggestions.value = await api.smartWriting.getUnadoptedSuggestions(novelId.value)
-    
-    // 如果没有建议，生成新的
-    if (suggestions.value.length === 0) {
-      suggestions.value = await api.smartWriting.generateSuggestions({
-        novelId: novelId.value,
-        count: 3,
-        expectedWordCount: form.value.targetWordCount
-      })
+    // 获取最新的上下文信息
+    const contextualRequest = {
+      novelId: novelId.value,
+      currentContent: lastChapter.value?.content || '',
+      currentScene: contextInfo.value?.currentScene?.name || '',
+      currentConflict: contextInfo.value?.latestAnalysis?.currentConflict || '',
+      protagonistName: contextInfo.value?.latestAnalysis?.protagonistName || '',
+      emotionalTone: contextInfo.value?.latestAnalysis?.emotionalTone || '',
+      activeCharacters: contextInfo.value?.characters?.map(c => c.name) || [],
+      expectedWordCount: form.value.targetWordCount,
+      count: 3
     }
+    
+    // 基于当前上下文生成新的建议
+    suggestions.value = await api.smartWriting.getContextualSuggestions(contextualRequest)
+    
   } catch (error) {
     console.error('加载建议失败:', error)
     alert('加载建议失败: ' + error.message)
@@ -852,27 +916,45 @@ const loadOutlineNodes = async () => {
 // 加载上下文信息（角色、场景、分析、建议）
 const loadContextInfo = async () => {
   try {
-    const [characters, scenes, latestAnalysis, unadoptedSuggestions] = await Promise.all([
-      api.characters.list(novelId.value),
-      api.scenes.list(novelId.value),
-      api.smartWriting.getLatestAnalysis(novelId.value).catch(() => null),
-      api.smartWriting.getUnadoptedSuggestions(novelId.value).catch(() => [])
-    ])
+    // 使用新的API获取完整的写作状态信息
+    const writingStatus = await api.smartWriting.getWritingStatus(novelId.value).catch(() => null)
     
-    // 获取当前场景
-    let currentScene = null
-    if (lastChapter.value?.sceneId) {
-      currentScene = scenes.find(s => s.id === lastChapter.value.sceneId)
+    if (writingStatus) {
+      contextInfo.value = {
+        writingStyle: writingStatus.writingStyle,
+        coreCharacters: writingStatus.coreCharacters,
+        recentCharacters: writingStatus.recentCharacters,
+        progress: writingStatus.progress,
+        continuationSuggestions: writingStatus.continuationSuggestions,
+        currentScene: writingStatus.currentScene,
+        plotThreads: writingStatus.plotThreads
+      }
+      
+      console.log('完整写作状态加载完成:', contextInfo.value)
+    } else {
+      // 如果新的API不可用，回退到旧的加载方式
+      const [characters, scenes, latestAnalysis, unadoptedSuggestions] = await Promise.all([
+        api.characters.list(novelId.value),
+        api.scenes.list(novelId.value),
+        api.smartWriting.getLatestAnalysis(novelId.value).catch(() => null),
+        api.smartWriting.getUnadoptedSuggestions(novelId.value).catch(() => [])
+      ])
+      
+      // 获取当前场景
+      let currentScene = null
+      if (lastChapter.value?.sceneId) {
+        currentScene = scenes.find(s => s.id === lastChapter.value.sceneId)
+      }
+      
+      contextInfo.value = {
+        characters,
+        currentScene,
+        latestAnalysis,
+        unadoptedSuggestions
+      }
+      
+      console.log('上下文信息加载完成:', contextInfo.value)
     }
-    
-    contextInfo.value = {
-      characters,
-      currentScene,
-      latestAnalysis,
-      unadoptedSuggestions
-    }
-    
-    console.log('上下文信息加载完成:', contextInfo.value)
   } catch (error) {
     console.error('加载上下文信息失败:', error)
   }
@@ -880,11 +962,16 @@ const loadContextInfo = async () => {
 
 // 获取角色类型标签
 const getRoleTypeLabel = (roleType) => {
+  if (!roleType) return ''
+  
   const labels = {
     'PROTAGONIST': '主角',
     'ANTAGONIST': '反派',
     'SUPPORTING': '配角',
-    'MINOR': '次要'
+    'MINOR': '次要',
+    'PRIMARY': '主要',
+    'SECONDARY': '次要',
+    'TERTIARY': '边缘'
   }
   return labels[roleType] || roleType
 }

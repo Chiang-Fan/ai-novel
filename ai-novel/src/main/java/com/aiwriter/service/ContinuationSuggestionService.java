@@ -1,5 +1,6 @@
 package com.aiwriter.service;
 
+import com.aiwriter.dto.ContextualSuggestionRequest;
 import com.aiwriter.dto.ContinuationSuggestionResponse;
 import com.aiwriter.dto.SuggestionGenerateRequest;
 import com.aiwriter.entity.ContentAnalysis;
@@ -77,11 +78,50 @@ public class ContinuationSuggestionService {
     }
     
     /**
+     * 基于当前上下文生成建议
+     */
+    @Transactional
+    public List<ContinuationSuggestionResponse> getContextualSuggestions(ContextualSuggestionRequest request) {
+        // 验证小说存在
+        Novel novel = novelRepository.findById(request.getNovelId())
+            .orElseThrow(() -> new RuntimeException("小说不存在"));
+        
+        // 调用AI生成基于上下文的建议
+        String suggestionsJson = performContextualAiSuggestionGeneration(novel, request);
+        
+        // 解析并保存建议
+        List<ContinuationSuggestion> suggestions = parseSuggestions(
+            suggestionsJson,
+            request.getNovelId(),
+            null, // 没有分析ID
+            request.getExpectedWordCount()
+        );
+        
+        // 批量保存
+        suggestions = suggestionRepository.saveAll(suggestions);
+        
+        // 转换为响应DTO
+        return suggestions.stream()
+            .map(this::convertToResponse)
+            .toList();
+    }
+    
+    /**
      * 执行AI续写建议生成
      */
     private String performAiSuggestionGeneration(Novel novel, ContentAnalysis analysis, int count) {
         String systemPrompt = buildSuggestionSystemPrompt();
         String userPrompt = buildSuggestionUserPrompt(novel, analysis, count);
+        
+        return aiService.chatJson(systemPrompt, userPrompt);
+    }
+    
+    /**
+     * 执行上下文相关的AI续写建议生成
+     */
+    private String performContextualAiSuggestionGeneration(Novel novel, ContextualSuggestionRequest request) {
+        String systemPrompt = buildSuggestionSystemPrompt();
+        String userPrompt = buildContextualSuggestionUserPrompt(novel, request);
         
         return aiService.chatJson(systemPrompt, userPrompt);
     }
@@ -192,6 +232,59 @@ public class ContinuationSuggestionService {
         
         prompt.append("\n请基于以上信息，提供 ").append(count).append(" 个富有创意且符合故事逻辑的续写方向。");
         prompt.append("每个方向应该是独特的，覆盖不同的情节发展可能性。\n");
+        
+        return prompt.toString();
+    }
+    
+    /**
+     * 构建上下文相关的用户提示词
+     */
+    private String buildContextualSuggestionUserPrompt(Novel novel, ContextualSuggestionRequest request) {
+        StringBuilder prompt = new StringBuilder();
+        
+        prompt.append("请为以下小说生成 ").append(request.getCount()).append(" 个续写方向建议：\n\n");
+        
+        prompt.append("=== 小说基本信息 ===\n");
+        prompt.append("标题：").append(novel.getTitle()).append("\n");
+        prompt.append("类型：").append(novel.getGenre() != null ? novel.getGenre() : "未知").append("\n");
+        prompt.append("目标读者：").append(novel.getTargetAudience() != null ? novel.getTargetAudience() : "通用").append("\n");
+        if (novel.getWritingStyle() != null) {
+            prompt.append("写作风格：").append(novel.getWritingStyle()).append("\n");
+        }
+        prompt.append("当前章节数：").append(novel.getTotalChapters()).append("\n");
+        prompt.append("总字数：").append(novel.getTotalWords()).append("\n\n");
+        
+        prompt.append("=== 当前上下文信息 ===\n");
+        
+        if (request.getProtagonistName() != null) {
+            prompt.append("当前主角：").append(request.getProtagonistName()).append("\n");
+        }
+        
+        if (request.getCurrentScene() != null) {
+            prompt.append("当前场景：").append(request.getCurrentScene()).append("\n");
+        }
+        
+        if (request.getCurrentConflict() != null) {
+            prompt.append("当前冲突：").append(request.getCurrentConflict()).append("\n");
+        }
+        
+        if (request.getEmotionalTone() != null) {
+            prompt.append("当前情感基调：").append(request.getEmotionalTone()).append("\n");
+        }
+        
+        if (request.getActiveCharacters() != null && !request.getActiveCharacters().isEmpty()) {
+            prompt.append("活跃角色：").append(String.join(", ", request.getActiveCharacters())).append("\n");
+        }
+        
+        if (request.getCurrentContent() != null) {
+            prompt.append("\n当前内容片段：\n");
+            prompt.append(request.getCurrentContent().length() > 1000 ? 
+                request.getCurrentContent().substring(0, 1000) + "..." : request.getCurrentContent());
+            prompt.append("\n");
+        }
+        
+        prompt.append("\n请基于以上当前上下文信息，提供 ").append(request.getCount()).append(" 个富有创意且符合故事逻辑的续写方向。\n");
+        prompt.append("确保每个建议都与当前的场景、冲突和角色状态高度相关，避免脱离当前上下文的建议。\n");
         
         return prompt.toString();
     }

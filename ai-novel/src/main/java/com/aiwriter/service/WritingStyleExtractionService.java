@@ -43,29 +43,18 @@ public class WritingStyleExtractionService {
             // AI分析文风特征
             String features = analyzeStyleFeatures(sample);
             
-            // 检查相似度
-            List<WritingStyle> existingStyles = writingStyleRepository.findAll();
-            WritingStyle mostSimilar = null;
-            double maxSimilarity = 0.0;
+            // 根据小说ID查找文风记录
+            WritingStyle existingStyle = writingStyleRepository.findByNovelId(chapter.getNovelId());
             
-            for (WritingStyle style : existingStyles) {
-                double similarity = calculateSimilarity(features, style.getStyleFeatures());
-                if (similarity > maxSimilarity) {
-                    maxSimilarity = similarity;
-                    mostSimilar = style;
-                }
-            }
-            
-            if (maxSimilarity >= similarityThreshold && mostSimilar != null) {
-                // 更新已有文风
-                mostSimilar.setUsageCount(mostSimilar.getUsageCount() + 1);
-                writingStyleRepository.save(mostSimilar);
-                log.info("更新文风: id={}, name={}, 相似度={}", 
-                        mostSimilar.getId(), mostSimilar.getName(), maxSimilarity);
+            if (existingStyle != null) {
+                // 更新现有文风记录
+                updateExistingStyle(existingStyle, chapter, sample, features);
+                log.info("更新文风: novelId={}, name={}", 
+                        existingStyle.getNovelId(), existingStyle.getName());
             } else {
-                // 创建新文风
+                // 创建新文风记录
                 WritingStyle newStyle = createNewStyle(chapter, sample, features);
-                log.info("创建新文风: id={}, name={}", newStyle.getId(), newStyle.getName());
+                log.info("创建新文风: novelId={}, name={}", newStyle.getNovelId(), newStyle.getName());
             }
             
         } catch (Exception e) {
@@ -131,6 +120,27 @@ public class WritingStyleExtractionService {
     }
     
     /**
+     * 更新现有文风
+     */
+    private void updateExistingStyle(WritingStyle existingStyle, Chapter chapter, String sample, String features) {
+        // 更新文风特征，结合新章节的内容
+        existingStyle.setSampleText(sample);
+        existingStyle.setStyleFeatures(features);
+        existingStyle.setCategory("自动提取");
+        existingStyle.setLanguageComplexity(detectComplexity(sample));
+        existingStyle.setSentenceLength(String.valueOf(calculateAvgSentenceLength(sample)));
+        existingStyle.setTone(detectTone(sample));
+        existingStyle.setUsageCount(existingStyle.getUsageCount() + 1);
+        
+        // 保持名称，除非它是基于早期章节的
+        if (existingStyle.getName().startsWith("章节") && existingStyle.getName().contains("风格")) {
+            existingStyle.setName("章节" + chapter.getChapterNumber() + "风格");
+        }
+        
+        writingStyleRepository.save(existingStyle);
+    }
+    
+    /**
      * 创建新文风
      */
     private WritingStyle createNewStyle(Chapter chapter, String sample, String features) {
@@ -140,6 +150,7 @@ public class WritingStyleExtractionService {
                 .sampleText(sample)
                 .styleFeatures(features)
                 .category("自动提取")
+                .novelId(chapter.getNovelId())
                 .languageComplexity(detectComplexity(sample))
                 .sentenceLength(String.valueOf(calculateAvgSentenceLength(sample)))
                 .tone(detectTone(sample))

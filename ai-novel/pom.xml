@@ -189,7 +189,7 @@
             </plugin>
 
             <!-- Frontend Maven Plugin (Vue构建) -->
-            <!--<plugin>
+            <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>1.15.0</version>
@@ -198,7 +198,7 @@
                     <installDirectory>target</installDirectory>
                 </configuration>
                 <executions>
-                    <!-\- 安装Node和npm -\->
+                    <!-- 安装Node和npm -->
                     <execution>
                         <id>install node and npm</id>
                         <goals>
@@ -209,7 +209,7 @@
                             <npmVersion>10.2.3</npmVersion>
                         </configuration>
                     </execution>
-                    <!-\- npm install -\->
+                    <!-- npm install -->
                     <execution>
                         <id>npm install</id>
                         <goals>
@@ -219,7 +219,7 @@
                             <arguments>install</arguments>
                         </configuration>
                     </execution>
-                    <!-\- npm run build -\->
+                    <!-- npm run build -->
                     <execution>
                         <id>npm run build</id>
                         <goals>
@@ -230,10 +230,10 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
 
             <!-- Resources Plugin (复制前端构建产物) -->
-            <!--<plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
@@ -254,7 +254,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
 

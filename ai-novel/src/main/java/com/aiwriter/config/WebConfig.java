@@ -32,8 +32,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        // 所有非API请求都转发到index.html（支持Vue Router的history模式）
+        // 将所有非API、非静态资源请求都转发到index.html（支持Vue Router的history模式）
         registry.addViewController("/")
+                .setViewName("forward:/index.html");
+        // 排除静态资源文件（包含点号的路径）
+        registry.addViewController("/{spring:\\w+}")
                 .setViewName("forward:/index.html");
     }
 }

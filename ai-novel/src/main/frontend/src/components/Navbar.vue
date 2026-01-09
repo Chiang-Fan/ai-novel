@@ -30,6 +30,13 @@
           >
             创建新作
           </router-link>
+          <router-link
+            to="/smart-novel-create"
+            class="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+            active-class="text-blue-600"
+          >
+            智能新建
+          </router-link>
         </div>
 
         <!-- User Menu -->

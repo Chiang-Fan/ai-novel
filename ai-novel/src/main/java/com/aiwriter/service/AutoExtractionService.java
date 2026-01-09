@@ -21,6 +21,7 @@ public class AutoExtractionService {
     private final SceneExtractionService sceneExtractionService;
     private final OutlineExtractionService outlineExtractionService;
     private final PlotHookExtractionService plotHookService;
+    private final CharacterExtractionService characterExtractionService;
     
     /**
      * 章节保存后的自动提取入口
@@ -60,6 +61,12 @@ public class AutoExtractionService {
             if (config.getFeatures().isExtractPlotHook()) {
                 plotHookService.extractAndSyncPlotHook(chapter, 
                         config.getSimilarity().getPlotHook());
+            }
+            
+            // 5. 提取角色
+            if (config.getFeatures().isExtractCharacter()) {
+                characterExtractionService.extractAndSyncCharacter(chapter, 
+                        config.getSimilarity().getCharacter());
             }
             
             long duration = System.currentTimeMillis() - startTime;

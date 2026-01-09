@@ -48,6 +48,11 @@ public class AutoExtractionConfig {
          * 文风相似度阈值
          */
         private double writingStyle = 0.85;
+        
+        /**
+         * 角色相似度阈值
+         */
+        private double character = 0.80;
     }
     
     @Data
@@ -71,5 +76,10 @@ public class AutoExtractionConfig {
          * 自动识别伏笔
          */
         private boolean extractPlotHook = true;
+        
+        /**
+         * 自动提取角色
+         */
+        private boolean extractCharacter = true;
     }
 }

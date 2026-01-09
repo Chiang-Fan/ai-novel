@@ -5,9 +5,11 @@ import com.aiwriter.dto.*;
 import com.aiwriter.entity.Chapter;
 import com.aiwriter.entity.ContentAnalysis;
 import com.aiwriter.entity.Novel;
+import com.aiwriter.entity.Outline;
 import com.aiwriter.repository.ChapterRepository;
 import com.aiwriter.service.ai.AiService;
 import com.aiwriter.service.ai.ContextManager;
+import com.aiwriter.service.ai.PromptBuilderService;
 import com.aiwriter.service.ai.PromptTemplates;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +42,8 @@ public class ChapterService {
     private final ObjectMapper objectMapper;
     private final AutoExtractionService autoExtractionService;
     private final PromptBuilderService promptBuilderService;  // 新增：Qwen-Project.md动态Prompt构建
+    private final NovelWritingStyleService novelWritingStyleService;  // 新增：四维风格画像服务
+    private final OutlineGenerationService outlineGenerationService;  // 新增：大纲生成功能
     
     /**
      * 创建章节
@@ -48,10 +52,18 @@ public class ChapterService {
     public Chapter createChapter(ChapterCreateRequest request) {
         Novel novel = novelService.getNovel(request.getNovelId());
         
-        // 获取下一个章节号
-        Integer nextChapterNumber = chapterRepository
+        // 如果是第一章且没有大纲，自动生成大纲
+        // 注意：ChapterCreateRequest不包含章节号，我们使用数据库中的最大章节号+1来确定
+        Integer maxChapterNumber = chapterRepository
             .findMaxChapterNumber(request.getNovelId())
-            .orElse(0) + 1;
+            .orElse(0);
+        if (maxChapterNumber == 0) { // 第一章
+            List<Outline> outlines = outlineGenerationService.generateOutline(request.getNovelId());
+            log.info("为小说 {} 自动生成了 {} 个大纲节点", request.getNovelId(), outlines.size());
+        }
+        
+        // 获取下一个章节号
+        Integer nextChapterNumber = maxChapterNumber + 1;
         
         // 创建章节
         Chapter chapter = new Chapter();
@@ -775,67 +787,128 @@ public class ChapterService {
             return;
         }
         
-        log.info("开始自动创建角色，共 {} 个", analysis.getExtractedCharacters().size());
+        log.info("开始自动创建/更新角色，共 {} 个", analysis.getExtractedCharacters().size());
         
         // 获取现有角色列表
         List<com.aiwriter.entity.Character> existingCharacters = characterService.getCharactersByNovel(novelId);
-        java.util.Set<String> existingNames = existingCharacters.stream()
-            .map(com.aiwriter.entity.Character::getName)
-            .collect(java.util.stream.Collectors.toSet());
+        java.util.Map<String, com.aiwriter.entity.Character> existingNameMap = existingCharacters.stream()
+            .collect(java.util.stream.Collectors.toMap(
+                com.aiwriter.entity.Character::getName, 
+                character -> character,
+                (existing, replacement) -> existing // 如果有重复键，保留现有值
+            ));
         
-        int createdCount = 0;
+        // 创建一个映射，用于存储规范化后的角色名到原始角色的映射
+        java.util.Map<String, com.aiwriter.entity.Character> normalizedNameMap = new java.util.HashMap<>();
+        for (com.aiwriter.entity.Character character : existingCharacters) {
+            String normalized = normalizeCharacterName(character.getName());
+            if (!normalizedNameMap.containsKey(normalized)) {
+                normalizedNameMap.put(normalized, character);
+            }
+        }
+        
+        int processedCount = 0;
         for (ContentAnalysisResponse.ExtractedCharacterDTO dto : analysis.getExtractedCharacters()) {
             if (dto.getName() == null || dto.getName().trim().isEmpty()) {
                 continue;
             }
             
-            // 如果角色已存在，跳过
-            if (existingNames.contains(dto.getName())) {
-                log.debug("角色已存在，跳过: {}", dto.getName());
-                continue;
-            }
-            
             try {
-                // 创建新角色
-                com.aiwriter.entity.Character character = new com.aiwriter.entity.Character();
-                character.setNovelId(novelId);
-                character.setName(dto.getName());
-                character.setRoleType(mapRoleType(dto.getRole()));
+                com.aiwriter.entity.Character character;
+                boolean isUpdate = existingNameMap.containsKey(dto.getName());
                 
-                // 设置性格特征和描述
-                if (dto.getTraits() != null) {
-                    character.setPersonality(dto.getTraits());
-                }
-                if (dto.getDescription() != null) {
-                    character.setBackground(dto.getDescription());
-                }
-                
-                // 设置是否为整体主角
-                if (dto.getIsGlobalProtagonist() != null) {
-                    character.setIsGlobalProtagonist(dto.getIsGlobalProtagonist());
+                if (isUpdate) {
+                    // 更新现有角色
+                    character = existingNameMap.get(dto.getName());
+                    log.debug("更新现有角色: {}", dto.getName());
+                    
+                    // 更新角色类型
+                    if (dto.getRole() != null) {
+                        character.setRoleType(mapRoleType(dto.getRole()));
+                    }
+                    
+                    // 更新性格特征和描述
+                    if (dto.getTraits() != null) {
+                        character.setPersonality(dto.getTraits());
+                    }
+                    if (dto.getDescription() != null) {
+                        character.setBackground(dto.getDescription());
+                    }
+                    
+                    // 更新是否为整体主角
+                    if (dto.getIsGlobalProtagonist() != null) {
+                        character.setIsGlobalProtagonist(dto.getIsGlobalProtagonist());
+                    } else if (character.getRoleType() != null && "PROTAGONIST".equals(character.getRoleType())) {
+                        // 如果角色类型是主角，默认为整体主角
+                        character.setIsGlobalProtagonist(true);
+                    }
+                    
+                    // 更新重要性级别
+                    if (dto.getImportanceLevel() != null) {
+                        character.setImportanceLevel(dto.getImportanceLevel());
+                    } else {
+                        // 根据角色类型设置默认重要性
+                        if (character.getImportanceLevel() == null || character.getImportanceLevel() == 0) {
+                            character.setImportanceLevel(getDefaultImportanceLevel(character.getRoleType()));
+                        }
+                    }
+                    
+                    characterService.updateCharacter(character.getId(), character);
+                    log.info("自动更新角色成功: {} (整体主角: {}, 重要性: {})", 
+                        dto.getName(), character.getIsGlobalProtagonist(), character.getImportanceLevel());
                 } else {
-                    // 如果角色类型是主角，默认为整体主角
-                    character.setIsGlobalProtagonist("PROTAGONIST".equals(character.getRoleType()));
+                    // 创建新角色
+                    character = new com.aiwriter.entity.Character();
+                    character.setNovelId(novelId);
+                    character.setName(dto.getName());
+                    character.setRoleType(mapRoleType(dto.getRole()));
+                    
+                    // 设置性格特征和描述
+                    if (dto.getTraits() != null) {
+                        character.setPersonality(dto.getTraits());
+                    }
+                    if (dto.getDescription() != null) {
+                        character.setBackground(dto.getDescription());
+                    }
+                    
+                    // 设置是否为整体主角
+                    if (dto.getIsGlobalProtagonist() != null) {
+                        character.setIsGlobalProtagonist(dto.getIsGlobalProtagonist());
+                    } else {
+                        // 如果角色类型是主角，默认为整体主角
+                        character.setIsGlobalProtagonist("PROTAGONIST".equals(character.getRoleType()));
+                    }
+                    
+                    // 设置重要性级别
+                    if (dto.getImportanceLevel() != null) {
+                        character.setImportanceLevel(dto.getImportanceLevel());
+                    } else {
+                        // 根据角色类型设置默认重要性
+                        character.setImportanceLevel(getDefaultImportanceLevel(character.getRoleType()));
+                    }
+                    
+                    characterService.createCharacter(character);
+                    processedCount++;
+                    log.info("自动创建角色成功: {} (整体主角: {}, 重要性: {})", 
+                        dto.getName(), character.getIsGlobalProtagonist(), character.getImportanceLevel());
                 }
-                
-                // 设置重要性级别
-                if (dto.getImportanceLevel() != null) {
-                    character.setImportanceLevel(dto.getImportanceLevel());
-                } else {
-                    // 根据角色类型设置默认重要性
-                    character.setImportanceLevel(getDefaultImportanceLevel(character.getRoleType()));
-                }
-                
-                characterService.createCharacter(character);
-                createdCount++;
-                log.info("自动创建角色成功: {} (整体主角: {}, 重要性: {})", 
-                    dto.getName(), character.getIsGlobalProtagonist(), character.getImportanceLevel());
             } catch (Exception e) {
-                log.warn("自动创建角色失败: {}, 错误: {}", dto.getName(), e.getMessage());
+                log.warn("自动创建/更新角色失败: {}, 错误: {}", dto.getName(), e.getMessage());
             }
         }
         
-        log.info("自动创建角色完成，成功创建 {} 个", createdCount);
+        log.info("自动创建/更新角色完成，成功处理 {} 个", processedCount);
+    }
+    
+    /**
+     * 规范化角色名称，移除标点符号和空格，转换为小写，用于比较
+     */
+    private String normalizeCharacterName(String name) {
+        if (name == null) {
+            return "";
+        }
+        // 移除空格和标点符号，转换为小写
+        return name.replaceAll("[\\s\\p{Punct}]", "").toLowerCase();
     }
     
     /**
@@ -849,6 +922,71 @@ public class ChapterService {
             case "MINOR" -> 3;         // 次要角色较低
             default -> 5;
         };
+    }
+    
+    /**
+     * 判断两个角色名称是否相似（用于合并相同角色）
+     */
+    private boolean isSimilarName(String name1, String name2) {
+        if (name1 == null || name2 == null) {
+            return false;
+        }
+        
+        // 检查是否为"名称(真名)"格式
+        String baseName1 = extractBaseName(name1);
+        String baseName2 = extractBaseName(name2);
+        
+        // 如果基础名称相同，则认为是相似的
+        if (baseName1.equals(baseName2)) {
+            return true;
+        }
+        
+        // 避免部分匹配（如"李明"和"李明华"）
+        // 只有当一个是另一个的完全子串且长度差异不大时才认为相似
+        if (name1.length() > name2.length()) {
+            return name1.startsWith(name2) && name1.length() - name2.length() <= 2;
+        } else if (name2.length() > name1.length()) {
+            return name2.startsWith(name1) && name2.length() - name1.length() <= 2;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * 提取基础名称（去除括号及其内容）
+     */
+    private String extractBaseName(String name) {
+        if (name == null) {
+            return "";
+        }
+        
+        // 使用正则表达式提取括号前的部分
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("^(.*?)\\s*\\([^)]*\\)");
+        java.util.regex.Matcher matcher = pattern.matcher(name);
+        if (matcher.find()) {
+            return matcher.group(1).trim();
+        }
+        
+        // 如果没有括号，返回原名称
+        return name.trim();
+    }
+    
+    /**
+     * 提取真名（从括号中提取）
+     */
+    private String extractRealName(String name) {
+        if (name == null) {
+            return null;
+        }
+        
+        // 使用正则表达式提取括号中的内容
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\(([^)]*)\\)");
+        java.util.regex.Matcher matcher = pattern.matcher(name);
+        if (matcher.find()) {
+            return matcher.group(1).trim();
+        }
+        
+        return null;
     }
     
     /**

@@ -10,7 +10,6 @@ import java.util.List;
 public interface OutlineRepository extends JpaRepository<Outline, Long> {
     List<Outline> findByNovelIdOrderBySequenceNumberAsc(Long novelId);
     List<Outline> findByNovelIdAndParentIdOrderBySequenceNumberAsc(Long novelId, Long parentId);
+    List<Outline> findByNovelIdAndNodeTypeOrderBySequenceNumberAsc(Long novelId, String nodeType);
     List<Outline> findByNovelIdAndParentIdIsNullOrderBySequenceNumberAsc(Long novelId);
-    List<Outline> findByNovelIdAndNodeType(Long novelId, String nodeType);
-    long countByNovelId(Long novelId);
 }

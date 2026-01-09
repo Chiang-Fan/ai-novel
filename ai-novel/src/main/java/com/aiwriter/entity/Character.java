@@ -92,6 +92,24 @@ public class Character {
     @Column(name = "last_updated_chapter")
     private Integer lastUpdatedChapter;
     
+    /**
+     * 首次出现章节号
+     */
+    @Column(name = "first_appearance_chapter")
+    private Integer firstAppearanceChapter;
+    
+    /**
+     * 最后出现章节号
+     */
+    @Column(name = "last_appearance_chapter")
+    private Integer lastAppearanceChapter;
+    
+    /**
+     * 出现次数
+     */
+    @Column(name = "appearance_count")
+    private Integer appearanceCount = 0;
+    
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     

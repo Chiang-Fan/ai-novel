@@ -112,6 +112,8 @@ export default {
     adoptSuggestion: (id, chapterId) => api.put(`/smart-writing/suggestions/${id}/adopt`, null, {
       params: { chapterId }
     }),
+    getContextualSuggestions: (data) => api.post('/smart-writing/suggestions/contextual', data),
+    getWritingStatus: (novelId) => api.get(`/smart-writing/status/${novelId}`),
     
     // 组合操作
     analyzeAndSuggest: (data) => api.post('/smart-writing/analyze-and-suggest', data)
@@ -326,5 +328,21 @@ export default {
     accept: (suggestionId) => api.post(`/suggestions/${suggestionId}/accept`),
     // 拒绝建议
     reject: (suggestionId) => api.post(`/suggestions/${suggestionId}/reject`)
+  },
+  
+  // 🔥 智能新建小说
+  smartNovelCreation: {
+    // 开始智能创建会话
+    start: (data, sessionId = '') => api.post('/smart-novel-creation/start', data, {
+      params: { sessionId }
+    }),
+    // 处理用户回复
+    processReply: (data, sessionId) => api.post('/smart-novel-creation/reply', data, {
+      params: { sessionId }
+    }),
+    // 获取会话状态
+    getStatus: (sessionId) => api.get(`/smart-novel-creation/session/${sessionId}`),
+    // 重置会话
+    reset: (sessionId) => api.post(`/smart-novel-creation/reset/${sessionId}`)
   }
 }

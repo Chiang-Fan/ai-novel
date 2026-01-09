@@ -22,12 +22,12 @@ import PlotHookManager from '../views/PlotHookManager.vue'
 import ChapterAnalysisViewer from '../views/ChapterAnalysisViewer.vue'
 import WorldSettingManager from '../views/WorldSettingManager.vue'
 import TextImportManager from '../views/TextImportManager.vue'
-import MigrationManager from '../views/MigrationManager.vue'
 import Login from '../views/Login.vue'
 import OptimizationManager from '../views/OptimizationManager.vue'
 import PaceControlPanel from '../views/PaceControlPanel.vue'
 import PlotSimulationPanel from '../views/PlotSimulationPanel.vue'
 import SuggestionManager from '../views/SuggestionManager.vue'
+import SmartNovelCreation from '../views/SmartNovelCreation.vue'
 
 const routes = [
   {
@@ -162,12 +162,7 @@ const routes = [
     component: TextImportManager,
     meta: { title: '文本导入管理' }
   },
-  {
-    path: '/migration',
-    name: 'MigrationManager',
-    component: MigrationManager,
-    meta: { title: '风格迁移管理' }
-  },
+
   {
     path: '/novel/:id/optimization',
     name: 'OptimizationManager',
@@ -191,6 +186,12 @@ const routes = [
     name: 'SuggestionManager',
     component: SuggestionManager,
     meta: { title: '建议管理' }
+  },
+  {
+    path: '/smart-novel-create',
+    name: 'SmartNovelCreation',
+    component: SmartNovelCreation,
+    meta: { title: '智能新建小说' }
   }
 ]
 

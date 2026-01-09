@@ -6,9 +6,11 @@ import com.aiwriter.entity.Character;
 import com.aiwriter.entity.Chapter;
 import com.aiwriter.entity.Novel;
 import com.aiwriter.entity.WorldSetting;
+import com.aiwriter.entity.CharacterLorebook; // 新增：角色记忆库实体
 import com.aiwriter.repository.CharacterRepository;
 import com.aiwriter.repository.ChapterRepository;
 import com.aiwriter.repository.WorldSettingRepository;
+import com.aiwriter.repository.CharacterLorebookRepository; // 新增：角色记忆库Repository
 import com.aiwriter.service.ai.AiService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

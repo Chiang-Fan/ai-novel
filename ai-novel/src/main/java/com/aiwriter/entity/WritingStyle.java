@@ -68,6 +68,9 @@ public class WritingStyle {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
+    @Column(name = "novel_id")
+    private Long novelId;
+
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
     

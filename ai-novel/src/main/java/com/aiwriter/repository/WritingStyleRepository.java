@@ -31,4 +31,14 @@ public interface WritingStyleRepository extends JpaRepository<WritingStyle, Long
      * 按评分排序
      */
     List<WritingStyle> findAllByOrderByRatingDesc();
+    
+    /**
+     * 根据小说ID查找文风
+     */
+    WritingStyle findByNovelId(Long novelId);
+    
+    /**
+     * 检查是否存在指定小说的文风记录
+     */
+    boolean existsByNovelId(Long novelId);
 }

@@ -11,6 +11,7 @@ import java.util.List;
 public interface CharacterRepository extends JpaRepository<Character, Long> {
     List<Character> findByNovelIdOrderByRoleTypeAsc(Long novelId);
     List<Character> findByNovelIdAndRoleType(Long novelId, String roleType);
+    List<Character> findByNovelIdOrderByUpdatedAtDesc(Long novelId);
     long countByNovelId(Long novelId);
     
     // 查找主要角色（主角和反派）
